@@ -266,6 +266,7 @@ struct ft5x06_ts_data {
 	struct pinctrl_state *pinctrl_state_active;
 	struct pinctrl_state *pinctrl_state_suspend;
 	struct pinctrl_state *pinctrl_state_release;
+	
 };
 
 static int ft5x06_ts_start(struct device *dev);
@@ -748,11 +749,16 @@ static irqreturn_t ft5x06_ts_interrupt(int irq, void *dev_id)
 			break;
 
 		update_input = true;
-
+		
 		x = (buf[FT_TOUCH_X_H_POS + FT_ONE_TCH_LEN * i] & 0x0F) << 8 |
 			(buf[FT_TOUCH_X_L_POS + FT_ONE_TCH_LEN * i]);
 		y = (buf[FT_TOUCH_Y_H_POS + FT_ONE_TCH_LEN * i] & 0x0F) << 8 |
 			(buf[FT_TOUCH_Y_L_POS + FT_ONE_TCH_LEN * i]);
+
+		if(data->pdata->mirror_h)
+			x=data->pdata->x_max-x;
+		if(data->pdata->mirror_v)
+			y=data->pdata->y_max-y;
 
 		status = buf[FT_TOUCH_EVENT_POS + FT_ONE_TCH_LEN * i] >> 6;
 
@@ -1926,7 +1932,6 @@ static int ft5x06_parse_dt(struct device *dev,
 	struct property *prop;
 	u32 temp_val, num_buttons;
 	u32 button_map[MAX_BUTTONS];
-
 	pdata->name = "focaltech";
 	rc = of_property_read_string(np, "focaltech,name", &pdata->name);
 	if (rc && (rc != -EINVAL)) {
@@ -2049,6 +2054,9 @@ static int ft5x06_parse_dt(struct device *dev,
 
 	pdata->gesture_support = of_property_read_bool(np,
 						"focaltech,gesture-support");
+
+	pdata->mirror_h = of_property_read_bool(np,"focaltech,mirror_h");
+	pdata->mirror_v = of_property_read_bool(np,"focaltech,mirror_v");
 
 	rc = of_property_read_u32(np, "focaltech,family-id", &temp_val);
 	if (!rc)

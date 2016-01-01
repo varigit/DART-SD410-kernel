@@ -516,6 +516,9 @@ static int ds1337_set_alarm(struct device *dev, struct rtc_wkalrm *t)
 	u8			control, status;
 	int			ret;
 
+	//return 0 to enable sleep mode. 
+	return 0;
+	
 	if (!test_bit(HAS_ALARM, &ds1307->flags))
 		return -EINVAL;
 
