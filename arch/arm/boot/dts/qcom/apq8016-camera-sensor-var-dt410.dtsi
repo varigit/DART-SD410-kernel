@@ -199,7 +199,7 @@
 		reg = <0x0>;
 		qcom,csiphy-sd-index = <0>;
 		qcom,csid-sd-index = <0>;
-		qcom,mount-angle = <0>;
+		qcom,mount-angle = <270>;
 		qcom,actuator-src = <&actuator0>;
 		qcom,eeprom-src = <&eeprom0>;
 		cam_vdig-supply = <&vph_pwr_vreg>;
@@ -240,7 +240,7 @@
 		reg = <0x1>;
 		qcom,csiphy-sd-index = <1>;
 		qcom,csid-sd-index = <1>;
-		qcom,mount-angle = <90>;
+		qcom,mount-angle = <0>;
 		cam_vdig-supply = <&vph_pwr_vreg>;
 		cam_vana-supply = <&vph_pwr_vreg>;
 		cam_vio-supply = <&vph_pwr_vreg>;

@@ -49,12 +49,10 @@
 		qcom,mdss-dsi-panel-timings = [1F 06 00 00 1A 1E 04 08 01 03 04 00];
 		qcom,mdss-dsi-t-clk-post = <0x07>;
 		qcom,mdss-dsi-t-clk-pre = <0x0B>;
-		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-dsi-bl-max-level = <4095>;
 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
 		qcom,mdss-dsi-mdp-trigger = "none";
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
-		qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+		qcom,mdss-dsi-bl-pmic-pwm-frequency = <10000>;
 		qcom,mdss-dsi-bl-pmic-bank-select = <0>;
 		qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
 		qcom,mdss-dsi-reset-sequence = <1 10>;//selects DSI routing to DSI to LVDS bridge

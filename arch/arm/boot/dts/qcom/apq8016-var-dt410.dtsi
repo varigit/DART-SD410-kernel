@@ -11,7 +11,7 @@
  */
 
 #include "apq8016-dart.dtsi"
-#include "apq8016-camera-sensor-sbc.dtsi"
+#include "apq8016-camera-sensor-var-dt410.dtsi"
 #include "dsi-panel-var-dt410.dtsi"
 
 / {
