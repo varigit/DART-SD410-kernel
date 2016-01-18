@@ -58,6 +58,8 @@
 			pinctrl-1 = <&adv7533_int_suspend &adv7533_hpd_int_suspend &adv7533_switch_suspend>;
 			adv7533,irq-gpio = <&msm_gpio 31 0x2002>;
 			adv7533,hpd-irq-gpio = <&msm_gpio 20 0x2003>;
+			clocks = <&clock_rpm clk_bb_clk2>;
+			clock-names = "ref_clk";
 		};
 		
 		/* DS1307 RTC module */

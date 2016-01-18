@@ -748,6 +748,13 @@ config HID_ZYDACRON
 	---help---
 	Support for Zydacron remote control.
 
+config USB_HID_LILLIPUT_MULTITOUCH
+        tristate "Lilliput Capcitive TouchScreen control support"
+        depends on USB_HID
+        default y
+        ---help---
+        Support for Lilliput Capcitive Touchscreen.
+
 config HID_SENSOR_HUB
 	tristate "HID Sensors framework support"
 	depends on HID

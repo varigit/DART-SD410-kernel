@@ -29,7 +29,7 @@
 			linux,reserve-contiguous-region;
 			linux,reserve-region;
 			linux,remove-completely;
-			reg = <0x0 0x86800000 0x0 0x04800000>;
+			reg = <0x0 0x86800000 0x0 0x02b00000>;
 			label = "modem_adsp_mem";
 		};
 
@@ -47,6 +47,12 @@
 			reg = <0 0 0 0x600000>;
 			label = "venus_qseecom_mem";
 		};
+
+                adsp_mem: adsp_region@0 {
+                        linux,reserve-contiguous-region;
+                        reg = <0 0 0 0x1000000>;
+                        label = "adsp_mem";
+                };
 
 		audio_mem: audio_region@0 {
 			linux,reserve-contiguous-region;

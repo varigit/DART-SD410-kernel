@@ -1118,6 +1118,12 @@ static const struct hid_device_id mt_devices[] = {
 	{  .driver_data = MT_CLS_NSMU,
 		MT_USB_DEVICE(USB_VENDOR_ID_CHUNGHWAT,
 			USB_DEVICE_ID_CHUNGHWAT_MULTITOUCH) },
+        #ifdef CONFIG_USB_HID_LILLIPUT_MULTITOUCH
+        /* Lilliput multitouch panels */
+        {  .driver_data = MT_CLS_DEFAULT,
+                HID_USB_DEVICE(USB_VENDOR_ID_LILLIPUT,
+                        USB_PROD_ID_LILLIPUT) },
+        #endif
 
 	/* CVTouch panels */
 	{ .driver_data = MT_CLS_NSMU,

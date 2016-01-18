@@ -28,17 +28,21 @@ endif
 mdss-dsi-objs := mdss_dsi.o mdss_dsi_host.o mdss_dsi_cmd.o mdss_dsi_status.o
 mdss-dsi-objs += mdss_dsi_panel.o
 mdss-dsi-objs += msm_mdss_io_8974.o
+mdss-dsi-objs += mdss_dsi_phy.o
 obj-$(CONFIG_FB_MSM_MDSS) += mdss-dsi.o
 obj-$(CONFIG_FB_MSM_MDSS) += mdss_panel.o
-obj-$(CONFIG_FB_MSM_MDSS) += adv7533_dsi2hdmi.o
+
 obj-$(CONFIG_FB_MSM_MDSS) += sn65dsi84-dsi2lvds.o
+
+obj-$(CONFIG_FB_MSM_MDSS) += mdss_hdmi_util.o
+obj-$(CONFIG_FB_MSM_MDSS) += mdss_hdmi_edid.o
+obj-$(CONFIG_FB_MSM_MDSS) += mdss_cec_abstract.o
+obj-$(CONFIG_FB_MSM_MDSS) += mdss_dba_utils.o
 obj-$(CONFIG_FB_MSM_MDSS_EDP_PANEL) += mdss_edp.o
 obj-$(CONFIG_FB_MSM_MDSS_EDP_PANEL) += mdss_edp_aux.o
 
 obj-$(CONFIG_FB_MSM_MDSS) += mdss_io_util.o
 obj-$(CONFIG_FB_MSM_MDSS_HDMI_PANEL) += mdss_hdmi_tx.o
-obj-$(CONFIG_FB_MSM_MDSS_HDMI_PANEL) += mdss_hdmi_util.o
-obj-$(CONFIG_FB_MSM_MDSS_HDMI_PANEL) += mdss_hdmi_edid.o
 obj-$(CONFIG_FB_MSM_MDSS_HDMI_PANEL) += mdss_hdmi_hdcp.o
 obj-$(CONFIG_FB_MSM_MDSS_HDMI_PANEL) += mdss_hdmi_cec.o
 obj-$(CONFIG_FB_MSM_MDSS_HDMI_MHL_SII8334) += mhl_sii8334.o mhl_msc.o

@@ -93,6 +93,8 @@
 			adv7533,irq-gpio = <&msm_gpio 31 0x2002>;
 			adv7533,hpd-irq-gpio = <&msm_gpio 20 0x2003>;
 			adv7533,switch-gpio = <&msm_gpio 32 0x0>;
+			clocks = <&clock_rpm clk_bb_clk2>;
+			clock-names = "ref_clk";
 		};
 	};
 
@@ -422,6 +424,7 @@
 		qcom,mdss-pan-physical-height-dimension = <90>;
 		qcom,mdss-dsi-force-clock-lane-hs;
 		qcom,mdss-dsi-always-on;
+		qcom,dba-panel;
 	};
 
 	dsi_adv7533_1080p: qcom,mdss_dsi_adv7533_1080p {
@@ -477,6 +480,7 @@
 		qcom,mdss-pan-physical-height-dimension = <90>;
 		qcom,mdss-dsi-force-clock-lane-hs;
 		qcom,mdss-dsi-always-on;
+		qcom,dba-panel;
 	};
 };
 

@@ -413,6 +413,12 @@ struct mdss_panel_info {
 	bool is_split_display;
 
 	bool is_prim_panel;
+	bool is_pluggable;
+	bool is_cec_supported;
+
+	void *edid_data;
+	void *dba_data;
+	void *cec_data;
 
 	char panel_name[MDSS_MAX_PANEL_LEN];
 	struct mdss_mdp_pp_tear_check te;
@@ -423,6 +429,7 @@ struct mdss_panel_info {
 	struct lvds_panel_info lvds;
 	struct edp_panel_info edp;
 
+	bool is_dba_panel;
 	/* debugfs structure for the panel */
 	struct mdss_panel_debugfs_info *debugfs_info;
 };

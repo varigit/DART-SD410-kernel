@@ -213,6 +213,46 @@ struct dsiphy_pll_divider_config {
 };
 
 extern struct dsiphy_pll_divider_config pll_divider_config;
+struct dsi_shared_data {
+	u32 hw_config; /* DSI setup configuration i.e. single/dual/split */
+	u32 pll_src_config; /* PLL source selection for DSI link clocks */
+	u32 hw_rev; /* DSI h/w revision */
+
+	/* DSI ULPS clamp register offsets */
+	u32 ulps_clamp_ctrl_off;
+	u32 ulps_phyrst_ctrl_off;
+
+	bool timing_db_mode;
+	bool cmd_clk_ln_recovery_en;
+	bool dsi0_active;
+	bool dsi1_active;
+
+	/* DSI bus clocks */
+	struct clk *mdp_core_clk;
+	struct clk *ahb_clk;
+	struct clk *axi_clk;
+	struct clk *mmss_misc_ahb_clk;
+	struct clk *tbu_clk;
+	struct clk *tbu_rt_clk;
+
+	/* Other shared clocks */
+	struct clk *ext_byte0_clk;
+	struct clk *ext_pixel0_clk;
+	struct clk *ext_byte1_clk;
+	struct clk *ext_pixel1_clk;
+
+	/* Clock sources for branch clocks */
+	struct clk *byte0_parent;
+	struct clk *pixel0_parent;
+	struct clk *byte1_parent;
+	struct clk *pixel1_parent;
+
+	/* DSI core regulators */
+	struct dss_module_power power_data[DSI_MAX_PM];
+
+	/* Shared mutex for DSI PHY regulator */
+	struct mutex phy_reg_lock;
+};
 
 struct dsi_clk_mnd_table {
 	u8 lanes;
@@ -243,6 +283,11 @@ struct dsi_clk_desc {
 	u32 pre_div_func;
 };
 
+enum mdss_dsi_hw_config {
+	SINGLE_DSI,
+	DUAL_DSI,
+	SPLIT_DSI,
+};
 
 struct dsi_panel_cmds {
 	char *buf;
@@ -415,6 +460,16 @@ struct mdss_dsi_ctrl_pdata {
 	int horizontal_idle_cnt;
 	struct panel_horizontal_idle *line_idle;
 	struct mdss_util_intf *mdss_util;
+	struct dsi_shared_data *shared_data;
+	/* debugfs structure */
+	struct mdss_dsi_debugfs_info *debugfs_info;
+	bool ds_registered;
+
+	struct kobject *kobj;
+	int fb_node;
+
+	struct workqueue_struct *workq;
+	struct delayed_work dba_work;
 };
 
 struct dsi_status_data {
@@ -520,6 +575,10 @@ static inline const char *__mdss_dsi_pm_supply_node_name(
 	}
 }
 
+static inline u32 mdss_dsi_get_hw_config(struct dsi_shared_data *sdata)
+{
+	return sdata->hw_config;
+}
 static inline bool mdss_dsi_split_display_enabled(void)
 {
 	/*
@@ -529,7 +588,10 @@ static inline bool mdss_dsi_split_display_enabled(void)
 	 */
 	return ctrl_list[DSI_CTRL_LEFT] && ctrl_list[DSI_CTRL_RIGHT];
 }
-
+static inline bool mdss_dsi_is_hw_config_split(struct dsi_shared_data *sdata)
+{
+	return mdss_dsi_get_hw_config(sdata) == SPLIT_DSI;
+}
 static inline bool mdss_dsi_sync_wait_enable(struct mdss_dsi_ctrl_pdata *ctrl)
 {
 	return ctrl->cmd_sync_wait_broadcast;

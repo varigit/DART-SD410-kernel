@@ -59,5 +59,6 @@ endif
 
 obj-$(CONFIG_MSM_VIDC_1080P) += vidc/
 obj-$(CONFIG_MSM_VIDC_720P) += vidc/
+obj-$(CONFIG_MSM_DBA) += msm_dba/
 clean:
 	rm *.o .*cmd

@@ -32,6 +32,8 @@ struct msm_hdmi_mode_timing_info {
 	enum aspect_ratio ar;
 };
 
+#define MSM_HDMI_INIT_RES_PAGE          1
+
 #define MSM_HDMI_MODES_CEA		(1 << 0)
 #define MSM_HDMI_MODES_XTND		(1 << 1)
 #define MSM_HDMI_MODES_DVI		(1 << 2)
@@ -174,6 +176,10 @@ struct msm_hdmi_mode_timing_info {
 
 #define HDMI_VFRMT_MAX			(ETIII_VFRMT_END + 1)
 #define HDMI_VFRMT_FORCE_32BIT		0x7FFFFFFF
+#define RESERVE_OFF(x)			(ETIII_VFRMT_END + x)
+#define HDMI_VFRMT_RESERVE1		RESERVE_OFF(1)
+#define HDMI_VFRMT_RESERVE8		RESERVE_OFF(8)
+#define RESERVE_VFRMT_END		HDMI_VFRMT_RESERVE8
 
 /* Timing information for supported modes */
 #define VFRMT_NOT_SUPPORTED(VFRMT) \
@@ -381,6 +387,11 @@ do {	\
 			HDMI_VFRMT_1280x800p60_16_10);	\
 	}	\
 } while (0)
+
+#define MSM_HDMI_MODES_GET_DETAILS(mode, MODE) do {		\
+	struct msm_hdmi_mode_timing_info info = MODE##_TIMING;	\
+	*mode = info;						\
+	} while (0)
 
 static inline const char *msm_hdmi_mode_2string(uint32_t mode)
 {

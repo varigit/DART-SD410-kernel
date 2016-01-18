@@ -50,6 +50,7 @@
 		i2c5 = &i2c_5; /* I2C5 controller device */
 		i2c6 = &i2c_6; /* I2C6 NFC qup6 device */
 		i2c4 = &i2c_4; /* I2C4 controller device */
+                uart4 = &blsp1_uart1;
 	};
 
 	cpus {
@@ -445,7 +446,8 @@
 		pinctrl-names = "sleep", "default";
 		pinctrl-0 = <&hsuart_sleep>;
 		pinctrl-1 = <&hsuart_active>;
-		status = "disabled";
+		/*status = "disabled";*/
+		status = "ok";
 	};
 
 	blsp1_uart2: serial@78b0000 {

@@ -23,11 +23,13 @@
 #include <linux/regulator/consumer.h>
 #include <linux/leds-qpnp-wled.h>
 #include <linux/clk.h>
+#include <linux/uaccess.h>
 
 #include "mdss.h"
 #include "mdss_panel.h"
 #include "mdss_dsi.h"
 #include "mdss_debug.h"
+#include "mdss_dba_utils.h"
 
 #define XO_CLK_RATE	19200000
 
@@ -448,6 +450,353 @@ static int mdss_dsi_get_panel_cfg(char *panel_cfg,
 	return rc;
 }
 
+struct buf_data {
+	char *buf; /* cmd buf */
+	int blen; /* cmd buf length */
+	char *string_buf; /* cmd buf as string, 3 bytes per number */
+	int sblen; /* string buffer length */
+	int sync_flag;
+};
+
+struct mdss_dsi_debugfs_info {
+	struct dentry *root;
+	struct mdss_dsi_ctrl_pdata ctrl_pdata;
+	struct buf_data on_cmd;
+	struct buf_data off_cmd;
+	u32 override_flag;
+};
+static int mdss_dsi_cmd_state_open(struct inode *inode, struct file *file)
+{
+	/* non-seekable */
+	file->private_data = inode->i_private;
+	return nonseekable_open(inode, file);
+}
+
+static ssize_t mdss_dsi_cmd_state_read(struct file *file, char __user *buf,
+				size_t count, loff_t *ppos)
+{
+	int *link_state = file->private_data;
+	char buffer[32];
+	int blen = 0;
+
+	if (*ppos)
+		return 0;
+
+	if ((*link_state) == DSI_HS_MODE)
+		blen = snprintf(buffer, sizeof(buffer), "dsi_hs_mode\n");
+	else
+		blen = snprintf(buffer, sizeof(buffer), "dsi_lp_mode\n");
+
+	if (blen < 0)
+		return 0;
+
+	if (copy_to_user(buf, buffer, blen))
+		return -EFAULT;
+
+	*ppos += blen;
+	return blen;
+}
+
+static ssize_t mdss_dsi_cmd_state_write(struct file *file,
+			const char __user *p, size_t count, loff_t *ppos)
+{
+	int *link_state = file->private_data;
+	char *input;
+
+	input = kmalloc(count, GFP_KERNEL);
+	if (!input) {
+		pr_err("%s: Failed to allocate memory\n", __func__);
+		return -ENOMEM;
+	}
+
+	if (copy_from_user(input, p, count))
+		return -EFAULT;
+	input[count-1] = '\0';
+
+	if (strnstr(input, "dsi_hs_mode", strlen("dsi_hs_mode")))
+		*link_state = DSI_HS_MODE;
+	else
+		*link_state = DSI_LP_MODE;
+
+	kfree(input);
+	return count;
+}
+
+static const struct file_operations mdss_dsi_cmd_state_fop = {
+	.open = mdss_dsi_cmd_state_open,
+	.read = mdss_dsi_cmd_state_read,
+	.write = mdss_dsi_cmd_state_write,
+};
+
+static int mdss_dsi_cmd_open(struct inode *inode, struct file *file)
+{
+	/* non-seekable */
+	file->private_data = inode->i_private;
+	return nonseekable_open(inode, file);
+}
+
+static ssize_t mdss_dsi_cmd_read(struct file *file, char __user *buf,
+				 size_t count, loff_t *ppos)
+{
+	struct buf_data *pcmds = file->private_data;
+	char *bp;
+	ssize_t ret = 0;
+
+	if (*ppos == 0) {
+		kfree(pcmds->string_buf);
+		pcmds->string_buf = NULL;
+		pcmds->sblen = 0;
+	}
+
+	if (!pcmds->string_buf) {
+		/*
+		 * Buffer size is the sum of cmd length (3 bytes per number)
+		 * with NULL terminater
+		 */
+		int bsize = ((pcmds->blen)*3 + 1);
+		int blen = 0;
+		char *buffer;
+
+		buffer = kmalloc(bsize, GFP_KERNEL);
+		if (!buffer) {
+			pr_err("%s: Failed to allocate memory\n", __func__);
+			return -ENOMEM;
+		}
+
+		bp = pcmds->buf;
+		while ((blen < (bsize-1)) &&
+		       (bp < ((pcmds->buf) + (pcmds->blen)))) {
+			struct dsi_ctrl_hdr dchdr =
+					*((struct dsi_ctrl_hdr *)bp);
+			int dhrlen = sizeof(dchdr), dlen;
+			char *tmp = (char *)(&dchdr);
+			dlen = dchdr.dlen;
+			dchdr.dlen = htons(dchdr.dlen);
+			while (dhrlen--)
+				blen += snprintf(buffer+blen, bsize-blen,
+						 "%02x ", (*tmp++));
+
+			bp += sizeof(dchdr);
+			while (dlen--)
+				blen += snprintf(buffer+blen, bsize-blen,
+						 "%02x ", (*bp++));
+			buffer[blen-1] = '\n';
+		}
+		buffer[blen] = '\0';
+		pcmds->string_buf = buffer;
+		pcmds->sblen = blen;
+	}
+
+	/*
+	 * The max value of count is PAGE_SIZE(4096).
+	 * It may need multiple times of reading if string buf is too large
+	 */
+	if (*ppos >= (pcmds->sblen)) {
+		kfree(pcmds->string_buf);
+		pcmds->string_buf = NULL;
+		pcmds->sblen = 0;
+		return 0; /* the end */
+	}
+	ret = simple_read_from_buffer(buf, count, ppos, pcmds->string_buf,
+				      pcmds->sblen);
+	return ret;
+}
+
+static ssize_t mdss_dsi_cmd_write(struct file *file, const char __user *p,
+				  size_t count, loff_t *ppos)
+{
+	struct buf_data *pcmds = file->private_data;
+	ssize_t ret = 0;
+	int blen = 0;
+	char *string_buf;
+
+	if (*ppos == 0) {
+		kfree(pcmds->string_buf);
+		pcmds->string_buf = NULL;
+		pcmds->sblen = 0;
+	}
+
+	/* Allocate memory for the received string */
+	blen = count + (pcmds->sblen);
+	string_buf = krealloc(pcmds->string_buf, blen + 1, GFP_KERNEL);
+	if (!string_buf) {
+		pr_err("%s: Failed to allocate memory\n", __func__);
+		return -ENOMEM;
+	}
+
+	/* Writing in batches is possible */
+	ret = simple_write_to_buffer(string_buf, blen, ppos, p, count);
+
+	string_buf[blen] = '\0';
+	pcmds->string_buf = string_buf;
+	pcmds->sblen = blen;
+	return ret;
+}
+
+static int mdss_dsi_cmd_flush(struct file *file, fl_owner_t id)
+{
+	struct buf_data *pcmds = file->private_data;
+	int blen, len, i;
+	char *buf, *bufp, *bp;
+	struct dsi_ctrl_hdr *dchdr;
+
+	if (!pcmds->string_buf)
+		return 0;
+
+	/*
+	 * Allocate memory for command buffer
+	 * 3 bytes per number, and 2 bytes for the last one
+	 */
+	blen = ((pcmds->sblen) + 2) / 3;
+	buf = kzalloc(blen, GFP_KERNEL);
+	if (!buf) {
+		pr_err("%s: Failed to allocate memory\n", __func__);
+		kfree(pcmds->string_buf);
+		pcmds->string_buf = NULL;
+		pcmds->sblen = 0;
+		return -ENOMEM;
+	}
+
+	/* Translate the input string to command array */
+	bufp = pcmds->string_buf;
+	for (i = 0; i < blen; i++) {
+		uint32_t value = 0;
+		int step = 0;
+		if (sscanf(bufp, "%02x%n", &value, &step) > 0) {
+			*(buf+i) = (char)value;
+			bufp += step;
+		}
+	}
+
+	/* Scan dcs commands */
+	bp = buf;
+	len = blen;
+	while (len >= sizeof(*dchdr)) {
+		dchdr = (struct dsi_ctrl_hdr *)bp;
+		dchdr->dlen = ntohs(dchdr->dlen);
+		if (dchdr->dlen > len) {
+			pr_err("%s: dtsi cmd=%x error, len=%d\n",
+				__func__, dchdr->dtype, dchdr->dlen);
+			kfree(buf);
+			return -EINVAL;
+		}
+		bp += sizeof(*dchdr);
+		len -= sizeof(*dchdr);
+		bp += dchdr->dlen;
+		len -= dchdr->dlen;
+	}
+	if (len != 0) {
+		pr_err("%s: dcs_cmd=%x len=%d error!\n", __func__,
+				bp[0], len);
+		kfree(buf);
+		return -EINVAL;
+	}
+
+	if (pcmds->sync_flag) {
+		pcmds->buf = buf;
+		pcmds->blen = blen;
+		pcmds->sync_flag = 0;
+	} else {
+		kfree(pcmds->buf);
+		pcmds->buf = buf;
+		pcmds->blen = blen;
+	}
+	return 0;
+}
+
+static const struct file_operations mdss_dsi_cmd_fop = {
+	.open = mdss_dsi_cmd_open,
+	.read = mdss_dsi_cmd_read,
+	.write = mdss_dsi_cmd_write,
+	.flush = mdss_dsi_cmd_flush,
+};
+struct dentry *dsi_debugfs_create_dcs_cmd(const char *name, umode_t mode,
+				struct dentry *parent, struct buf_data *cmd,
+				struct dsi_panel_cmds ctrl_cmds)
+{
+	cmd->buf = ctrl_cmds.buf;
+	cmd->blen = ctrl_cmds.blen;
+	cmd->string_buf = NULL;
+	cmd->sblen = 0;
+	cmd->sync_flag = 1;
+
+	return debugfs_create_file(name, mode, parent,
+				   cmd, &mdss_dsi_cmd_fop);
+}
+
+#define DEBUGFS_CREATE_DCS_CMD(name, node, cmd, ctrl_cmd) \
+	dsi_debugfs_create_dcs_cmd(name, 0644, node, cmd, ctrl_cmd)
+static int mdss_dsi_debugfs_setup(struct mdss_panel_data *pdata,
+			struct dentry *parent)
+{
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata, *dfs_ctrl;
+	struct mdss_dsi_debugfs_info *dfs;
+
+	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
+				panel_data);
+
+	dfs = kzalloc(sizeof(*dfs), GFP_KERNEL);
+	if (!dfs) {
+		pr_err("%s: No memory to create dsi ctrl debugfs info",
+			__func__);
+		return -ENOMEM;
+	}
+
+	dfs->root = debugfs_create_dir("dsi_ctrl_pdata", parent);
+	if (IS_ERR_OR_NULL(dfs->root)) {
+		pr_err("%s: debugfs_create_dir dsi fail, error %ld\n",
+			__func__, PTR_ERR(dfs->root));
+		kfree(dfs);
+		return -ENODEV;
+	}
+
+	dfs_ctrl = &dfs->ctrl_pdata;
+	debugfs_create_u32("override_flag", 0644, dfs->root,
+			   &dfs->override_flag);
+
+	debugfs_create_bool("cmd_sync_wait_broadcast", 0644, dfs->root,
+			    (u32 *)&dfs_ctrl->cmd_sync_wait_broadcast);
+	debugfs_create_bool("cmd_sync_wait_trigger", 0644, dfs->root,
+			    (u32 *)&dfs_ctrl->cmd_sync_wait_trigger);
+
+	debugfs_create_file("dsi_on_cmd_state", 0644, dfs->root,
+		&dfs_ctrl->on_cmds.link_state, &mdss_dsi_cmd_state_fop);
+	debugfs_create_file("dsi_off_cmd_state", 0644, dfs->root,
+		&dfs_ctrl->off_cmds.link_state, &mdss_dsi_cmd_state_fop);
+
+	DEBUGFS_CREATE_DCS_CMD("dsi_on_cmd", dfs->root, &dfs->on_cmd,
+				ctrl_pdata->on_cmds);
+	DEBUGFS_CREATE_DCS_CMD("dsi_off_cmd", dfs->root, &dfs->off_cmd,
+				ctrl_pdata->off_cmds);
+
+	dfs->override_flag = 0;
+	dfs->ctrl_pdata = *ctrl_pdata;
+	ctrl_pdata->debugfs_info = dfs;
+	return 0;
+}
+
+static int mdss_dsi_debugfs_init(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
+{
+	struct mdss_panel_data *pdata = &ctrl_pdata->panel_data;
+	int rc;
+
+	do {
+		struct mdss_panel_info panel_info = pdata->panel_info;
+		if (panel_info.debugfs_info) {
+			rc = mdss_dsi_debugfs_setup(pdata,
+					panel_info.debugfs_info->root);
+			if (rc) {
+				pr_err("%s: Error in initilizing dsi ctrl debugfs\n",
+						__func__);
+				return rc;
+			}
+		}
+		pdata = pdata->next;
+	} while (pdata);
+
+	pr_debug("%s: Initialized mdss_dsi_debugfs_init\n", __func__);
+	return 0;
+}
 static int mdss_dsi_off(struct mdss_panel_data *pdata, int power_state)
 {
 	int ret = 0;
@@ -625,10 +974,20 @@ static int mdss_dsi_pinctrl_set_state(
 	bool active)
 {
 	struct pinctrl_state *pin_state;
+	struct mdss_panel_info *pinfo = NULL;
 	int rc = -EFAULT;
 
 	if (IS_ERR_OR_NULL(ctrl_pdata->pin_res.pinctrl))
 		return PTR_ERR(ctrl_pdata->pin_res.pinctrl);
+
+	pinfo = &ctrl_pdata->panel_data.panel_info;
+	if ((mdss_dsi_is_right_ctrl(ctrl_pdata) &&
+		mdss_dsi_is_hw_config_split(ctrl_pdata->shared_data)) ||
+			pinfo->is_dba_panel) {
+		pr_debug("%s:%d, pinctrl config not needed\n",
+			__func__, __LINE__);
+		return 0;
+	}
 
 	pin_state = active ? ctrl_pdata->pin_res.gpio_state_active
 				: ctrl_pdata->pin_res.gpio_state_suspend;
@@ -1210,11 +1569,53 @@ static int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata)
 	return rc;
 }
 
+
+static void mdss_dsi_dba_work(struct work_struct *work)
+{
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
+	struct delayed_work *dw = to_delayed_work(work);
+	struct mdss_dba_utils_init_data utils_init_data;
+	struct mdss_panel_info *pinfo;
+
+	ctrl_pdata = container_of(dw, struct mdss_dsi_ctrl_pdata, dba_work);
+	if (!ctrl_pdata) {
+		pr_err("%s: invalid ctrl data\n", __func__);
+		return;
+	}
+
+	pinfo = &ctrl_pdata->panel_data.panel_info;
+	if (!pinfo) {
+		pr_err("%s: invalid ctrl data\n", __func__);
+		return;
+	}
+
+	memset(&utils_init_data, 0, sizeof(utils_init_data));
+
+	utils_init_data.chip_name = "adv7533";
+	utils_init_data.client_name = "dsi";
+	utils_init_data.instance_id = 0;
+	utils_init_data.fb_node = ctrl_pdata->fb_node;
+	utils_init_data.kobj = ctrl_pdata->kobj;
+	utils_init_data.pinfo = pinfo;
+
+	pinfo->dba_data = mdss_dba_utils_init(&utils_init_data);
+
+	if (!IS_ERR_OR_NULL(pinfo->dba_data)) {
+		ctrl_pdata->ds_registered = true;
+		
+	} else {
+		queue_delayed_work(ctrl_pdata->workq,
+		&ctrl_pdata->dba_work, HZ);
+		
+	}
+}
+
 static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 				  int event, void *arg)
 {
 	int rc = 0;
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
+	struct fb_info *fbi;
 	int power_state;
 
 	if (pdata == NULL) {
@@ -1307,6 +1708,22 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 	case MDSS_EVENT_DSI_PANEL_STATUS:
 		if (ctrl_pdata->check_status)
 			rc = ctrl_pdata->check_status(ctrl_pdata);
+		break;
+	case MDSS_EVENT_FB_REGISTERED:
+		mdss_dsi_debugfs_init(ctrl_pdata);
+
+		fbi = (struct fb_info *)arg;
+		if (!fbi || !fbi->dev)
+			break;
+
+		ctrl_pdata->kobj = &fbi->dev->kobj;
+		ctrl_pdata->fb_node = fbi->node;
+
+		if (IS_ENABLED(CONFIG_MSM_DBA) &&
+			pdata->panel_info.is_dba_panel) {
+				queue_delayed_work(ctrl_pdata->workq,
+					&ctrl_pdata->dba_work, HZ);
+		}
 		break;
 	default:
 		pr_debug("%s: unhandled event=%d\n", __func__, event);
@@ -1541,6 +1958,16 @@ static int mdss_dsi_ctrl_probe(struct platform_device *pdev)
 		pr_err("%s: dsi panel dev reg failed\n", __func__);
 		goto error_pan_node;
 	}
+
+	ctrl_pdata->workq = create_workqueue("mdss_dsi_dba");
+	if (!ctrl_pdata->workq) {
+		pr_err("%s: Error creating workqueue\n", __func__);
+		rc = -EPERM;
+		goto error_pan_node;
+	}
+
+	INIT_DELAYED_WORK(&ctrl_pdata->dba_work, mdss_dsi_dba_work);
+
 
 	ctrl_pdata->cmd_clk_ln_recovery_en =
 		of_property_read_bool(pdev->dev.of_node,

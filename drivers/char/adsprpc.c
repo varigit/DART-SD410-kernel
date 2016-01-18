@@ -212,6 +212,7 @@ struct fastrpc_apps {
 	struct smq_phy_page range;
 	dev_t dev_no;
 	int compat;
+	int adsp_channel;
 	spinlock_t wrlock;
 	spinlock_t hlock;
 	struct hlist_head htbl[RPC_HASH_SZ];
@@ -1692,16 +1693,19 @@ static int fastrpc_device_release(struct inode *inode, struct file *file)
 static int fastrpc_device_open(struct inode *inode, struct file *filp)
 {
 	int cid = MINOR(inode->i_rdev);
-	int err = 0, ssrcount;
+	int err = 0, ssrcount, channel;
 	struct fastrpc_apps *me = &gfa;
 
 	mutex_lock(&me->smd_mutex);
 	ssrcount = me->channel[cid].ssrcount;
 	if ((kref_get_unless_zero(&me->channel[cid].kref) == 0) ||
 		(me->channel[cid].chan == 0)) {
+		channel = gcinfo[cid].channel;
+		if (!strcmp(gcinfo[cid].subsys, "adsp") && !me->adsp_channel)
+			channel = SMD_APPS_MODEM;
 		VERIFY(err, 0 == smd_named_open_on_edge(
 					FASTRPC_SMD_GUID,
-					gcinfo[cid].channel,
+					channel,
 					&me->channel[cid].chan,
 					(void *)(uintptr_t)cid,
 					smd_event_handler));
@@ -1871,8 +1875,9 @@ static const struct file_operations fops = {
 static int __init fastrpc_device_init(void)
 {
 	struct fastrpc_apps *me = &gfa;
-	struct device_node *ion_node, *node, *pnode;
+	struct device_node *cnode, *node, *pnode;
 	struct platform_device *pdev;
+	const char *label;
 	const u32 *addr;
 	uint64_t size;
 	uint32_t val;
@@ -1897,9 +1902,9 @@ static int __init fastrpc_device_init(void)
 	if (err)
 		goto class_create_bail;
 	me->compat = (NULL == fops.compat_ioctl) ? 0 : 1;
-	ion_node = of_find_compatible_node(NULL, NULL, "qcom,msm-ion");
-	if (ion_node) {
-		for_each_available_child_of_node(ion_node, node) {
+	cnode = of_find_compatible_node(NULL, NULL, "qcom,msm-ion");
+	if (cnode) {
+		for_each_available_child_of_node(cnode, node) {
 			if (of_property_read_u32(node, "reg", &val))
 				continue;
 			if (val != ION_ADSP_HEAP_ID)
@@ -1918,6 +1923,18 @@ static int __init fastrpc_device_init(void)
 			me->range.addr = cma_get_base(&pdev->dev);
 			me->range.size = (size_t)size;
 			break;
+		}
+	}
+	node = of_find_compatible_node(NULL, NULL, "qcom,smem");
+	if (cnode) {
+		for_each_available_child_of_node(cnode, node) {
+			if (of_property_match_string(node, "compatible",
+							"qcom,smd") < 0)
+				continue;
+			if (of_property_read_string(node, "label", &label))
+				continue;
+			if (!strcmp(label, "adsp"))
+				me->adsp_channel = 1;
 		}
 	}
 	for (i = 0; i < NUM_CHANNELS; i++) {
