@@ -46,9 +46,9 @@
 		qcom,mdss-dsi-lane-2-state;
 		qcom,mdss-dsi-lane-3-state;
 		qcom,mdss-dsi-force-clock-lane-hs;
-		qcom,mdss-dsi-panel-timings = [1F 06 00 00 1A 1E 04 08 01 03 04 00];
-		qcom,mdss-dsi-t-clk-post = <0x07>;
-		qcom,mdss-dsi-t-clk-pre = <0x0B>;
+		qcom,mdss-dsi-panel-timings = [4C 0A 02 00 20 24 06 0C 02 03 04 00]; 
+		qcom,mdss-dsi-t-clk-post = <0x05>;
+		qcom,mdss-dsi-t-clk-pre = <0x11>;
 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
 		qcom,mdss-dsi-mdp-trigger = "none";
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";

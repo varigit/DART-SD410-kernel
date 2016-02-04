@@ -137,27 +137,9 @@
 
 		home {
 			label = "home";
-			gpios = <&msm_gpio 108 0x1>;
-			linux,input-type = <1>;
-			linux,code = <102>;
-			gpio-key,wakeup;
-			debounce-interval = <15>;
-		};
-
-		back {
-			label = "back";
-			gpios = <&msm_gpio 109 0x1>;
-			linux,input-type = <1>;
-			linux,code = <158>;
-			gpio-key,wakeup;
-			debounce-interval = <15>;
-		};
-
-		vol_up {
-			label = "volume_up";
 			gpios = <&msm_gpio 107 0x1>;
 			linux,input-type = <1>;
-			linux,code = <115>;
+			linux,code = <102>;
 			gpio-key,wakeup;
 			debounce-interval = <15>;
 		};
@@ -208,8 +190,8 @@
 &mdss_dsi0 {
 	qcom,dsi-pref-prim-pan = <&dsi_variscite>;
 	pinctrl-names = "mdss_default", "mdss_sleep";
-	pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
-	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
+	pinctrl-0 = <&mdss_dsi_active &mdss_te_active &mdss_dsiext_active>;
+	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend &mdss_dsiext_suspend>;
 
 	qcom,platform-reset-gpio = <&msm_gpio 32 0>;
 
@@ -239,6 +221,28 @@
 };
 
 &tlmm_pinmux {
+	pmx_mdss_dsiext: pmx_mdss_dsiext {
+		qcom,pins = <&gp 109>;
+		qcom,pin-func = <0>;
+		qcom,num-grp-pins = <1>;
+		label = "mdss-dsiext";
+		mdss_dsiext_active: active {
+			drive-strength = <2>; /* 2 mA */
+			bias-pull-down; /* pull down */
+			output-low;
+		};
+		mdss_dsiext_suspend: suspend {
+			drive-strength = <2>; /* 2 mA */
+			bias-pull-down; /* pull down */
+			output-low;
+		};
+	};
+	
+	tlmm_gpio_key {
+		qcom,pins = <&gp 107>;
+		qcom,num-grp-pins = <1>;
+	};
+	
 	usb-id-pin {
 		qcom,pins = <&gp 121>;
 	     usbid_default{
@@ -333,6 +337,11 @@
 	};
 };
 
+&pm8916_pon {
+	qcom,pon_2 { /* Setting PM_RESET_IN as BACK key */
+		linux,code = <158>;
+	};
+};
 
 &pm8916_mpps {
 	mpp@a300 { /* MPP 4 */
