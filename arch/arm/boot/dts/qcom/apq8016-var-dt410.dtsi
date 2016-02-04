@@ -125,14 +125,6 @@
 			default-state = "off";
 			retain-state-suspended;
 		};
-
-		general2 {
-			gpios = <&msm_gpio 120 0>;
-			label = "led2";
-			linux,default-trigger = "none";
-			default-state = "off";
-			retain-state-suspended;
-		};
 	};
 
 	gpio_keys {
