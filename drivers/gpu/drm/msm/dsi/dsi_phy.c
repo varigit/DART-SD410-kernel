@@ -221,8 +221,9 @@ static int dsi_dphy_timing_calc(struct dsi_dphy_timing *timing,
 		return -EINVAL;
 
 	ui = mult_frac(NSEC_PER_MSEC, coeff, bit_rate / 1000);
+	
 	lpx = mult_frac(NSEC_PER_MSEC, coeff, esc_rate / 1000);
-
+	
 	tmax = S_DIV_ROUND_UP(95 * coeff, ui) - 2;
 	tmin = S_DIV_ROUND_UP(38 * coeff, ui) - 2;
 	timing->clk_prepare = linear_inter(tmax, tmin, pcnt0, 0, true);
@@ -232,6 +233,7 @@ static int dsi_dphy_timing_calc(struct dsi_dphy_timing *timing,
 		timing->hs_rqst = temp;
 	else
 		timing->hs_rqst = max_t(s32, 0, temp - 2);
+
 
 	/* Calculate clk_zero after clk_prepare and hs_rqst */
 	dsi_dphy_timing_calc_clk_zero(timing, ui, coeff, pcnt2);
@@ -281,7 +283,15 @@ static int dsi_dphy_timing_calc(struct dsi_dphy_timing *timing,
 	} else {
 		timing->clk_pre = linear_inter(tmax, tmin, pcnt2, 0, false);
 	}
-
+ 
+	timing->clk_zero=0x4c;
+	timing->clk_trail=0x0a;
+	timing->clk_prepare=0x02;
+	timing->hs_exit=0x20;
+	timing->hs_zero=0x24;
+	timing->hs_prepare=0x06;
+	timing->hs_trail=0x0c;
+	timing->hs_rqst=0x02;
 	timing->ta_go = 3;
 	timing->ta_sure = 0;
 	timing->ta_get = 4;
@@ -291,7 +301,6 @@ static int dsi_dphy_timing_calc(struct dsi_dphy_timing *timing,
 		timing->clk_trail, timing->clk_prepare, timing->hs_exit,
 		timing->hs_zero, timing->hs_prepare, timing->hs_trail,
 		timing->hs_rqst);
-
 	return 0;
 }
 

@@ -313,18 +313,14 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 	struct panel_simple *panel;
 	int err;
 	struct edid *edid;
-
 	panel = devm_kzalloc(dev, sizeof(*panel), GFP_KERNEL);
 	if (!panel)
 		return -ENOMEM;
-
 	panel->enabled = false;
 	panel->prepared = false;
-
 	panel->supply = devm_regulator_get(dev, "power");
 	if (IS_ERR(panel->supply))
 		return PTR_ERR(panel->supply);
-
 	panel->enable_gpio = devm_gpiod_get_optional(dev, "enable",
 						     GPIOD_OUT_LOW);
 	if (IS_ERR(panel->enable_gpio)) {
@@ -332,7 +328,6 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 		dev_err(dev, "failed to request GPIO: %d\n", err);
 		return err;
 	}
-
 	backlight = of_parse_phandle(dev->of_node, "backlight", 0);
 	if (backlight) {
 		panel->backlight = of_find_backlight_by_node(backlight);
@@ -341,7 +336,6 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 		if (!panel->backlight)
 			return -EPROBE_DEFER;
 	}
-
 	ddc = of_parse_phandle(dev->of_node, "ddc-i2c-bus", 0);
 	if (ddc) {
 		panel->ddc = of_find_i2c_adapter_by_node(ddc);
@@ -353,7 +347,6 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 				err = -ENODEV;
 				goto nodev;
 			}
-
 			/* get panel from edid */
 			if (of_device_is_compatible(dev->of_node,
 						"panel-simple")) {
@@ -370,7 +363,6 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 			goto free_backlight;
 		}
 	}
-
 	drm_panel_init(&panel->base);
 	panel->base.dev = dev;
 	panel->base.funcs = &panel_simple_funcs;
@@ -381,7 +373,6 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 		goto free_ddc;
 
 	dev_set_drvdata(dev, panel);
-
 	return 0;
 
 nodev:
@@ -1212,7 +1203,6 @@ static const struct panel_desc *panel_picker_find_panel(struct edid *edid)
 static int panel_simple_platform_probe(struct platform_device *pdev)
 {
 	const struct of_device_id *id;
-
 	id = of_match_node(platform_of_match, pdev->dev.of_node);
 	if (!id)
 		return -ENODEV;
@@ -1332,6 +1322,46 @@ static const struct panel_desc_dsi panasonic_vvx10f004b00 = {
 	.format = MIPI_DSI_FMT_RGB888,
 	.lanes = 4,
 };
+/*
+hdisplay = width
+hsync_start = hdisplay + hfp;
+hsync_end = hsync_start + hsw;
+htotal = hsync_end + hbp;
+
+vdisplay = y_res;
+vsync_start = vdisplay + vfp;
+vsync_end = vsync_start + vsw;
+vtotal = vsync_end + vbp;
+
+clock = htotal * vtotal * frame_rate / 1000;
+*/
+static const struct drm_display_mode sgd_gktw70sdae4sd_mode = {
+	.clock = 29232,
+	.hdisplay = 800,
+	.hsync_start = 800 + 50,
+	.hsync_end = 800 + 50 + 48,
+	.htotal = 800 + 50 + 48 + 50,
+	.vdisplay = 480,
+	.vsync_start = 480 + 23,
+	.vsync_end = 480 + 23 + 3,
+	.vtotal = 480 + 23 + 3 + 39,
+	.vrefresh = 60,
+};
+
+static const struct panel_desc_dsi sgd_gktw70sdae4sd = {
+	.desc = {
+		.modes = &sgd_gktw70sdae4sd_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 154,
+			.height = 87,
+		},
+	},
+	.flags = MIPI_DSI_MODE_VIDEO ,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+};
 
 static const struct of_device_id dsi_of_match[] = {
 	{
@@ -1344,6 +1374,9 @@ static const struct of_device_id dsi_of_match[] = {
 		.compatible = "panasonic,vvx10f004b00",
 		.data = &panasonic_vvx10f004b00
 	}, {
+		.compatible = "sgd,gktw70sdae4sd",
+		.data = &sgd_gktw70sdae4sd
+	}, {
 		/* sentinel */
 	}
 };
@@ -1354,7 +1387,6 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 	const struct panel_desc_dsi *desc;
 	const struct of_device_id *id;
 	int err;
-
 	id = of_match_node(dsi_of_match, dsi->dev.of_node);
 	if (!id)
 		return -ENODEV;
@@ -1405,13 +1437,11 @@ static int __init panel_simple_init(void)
 	err = platform_driver_register(&panel_simple_platform_driver);
 	if (err < 0)
 		return err;
-
 	if (IS_ENABLED(CONFIG_DRM_MIPI_DSI)) {
 		err = mipi_dsi_driver_register(&panel_simple_dsi_driver);
 		if (err < 0)
 			return err;
 	}
-
 	return 0;
 }
 module_init(panel_simple_init);
