@@ -150,21 +150,21 @@
 		qcom,cam-power-seq-cfg-val = <1 1 1 1 1 24000000>;
 		qcom,cam-power-seq-delay = <1 1 1 30 30 5>;
 	};
-	
+	 
 	qcom,camera@78 {
-		compatible = "ovti,ov5640";
+		compatible = "ovti,ov5645";
 		reg = <0x78 0x0>;
-		qcom,slave-id = <0x78 0x300a 0x5640>;
+		qcom,slave-id = <0x78 0x300a 0x5645>;
 		qcom,csiphy-sd-index = <1>;
 		qcom,csid-sd-index = <1>;
-		qcom,mount-angle = <0>;
-		qcom,sensor-name = "ov5640";
+		qcom,mount-angle = <90>;
+		qcom,sensor-name = "ov5645";
 		cam_vdig-supply = <&vph_pwr_vreg>;
 		cam_vana-supply = <&vph_pwr_vreg>;
 		cam_vio-supply = <&vph_pwr_vreg>;
 		qcom,cam-vreg-name = "cam_vdig", "cam_vio", "cam_vana";
-		qcom,cam-vreg-min-voltage = <1800000 0 2800000>;
-		qcom,cam-vreg-max-voltage = <1800000 0 2800000>;
+		qcom,cam-vreg-min-voltage = <2100000 0 2850000>;
+		qcom,cam-vreg-max-voltage = <2100000 0 2850000>;
 		qcom,cam-vreg-op-mode = <200000 0 80000>;
 		pinctrl-names = "cam_default", "cam_suspend";
 		pinctrl-0 = <&cam_sensor_mclk1_default &cam_sensor_front_default>;
@@ -175,7 +175,7 @@
 		qcom,gpio-reset = <1>;
 		qcom,gpio-standby = <2>;
 		qcom,gpio-req-tbl-num = <0 1 2>;
-		qcom,gpio-req-tbl-flags = <1 0 1>;
+		qcom,gpio-req-tbl-flags = <1 0 0>;
 		qcom,gpio-req-tbl-label = "CAMIF_MCLK",
 					"CAM_RESET",
 					"CAM_STANDBY";
@@ -257,7 +257,7 @@
 		qcom,gpio-reset = <1>;
 		qcom,gpio-standby = <2>;
 		qcom,gpio-req-tbl-num = <0 1 2>;
-		qcom,gpio-req-tbl-flags = <1 0 1>;
+		qcom,gpio-req-tbl-flags = <1 0 0>;
 		qcom,gpio-req-tbl-label = "CAMIF_MCLK",
 			"CAM_RESET",
 			"CAM_STANDBY";
