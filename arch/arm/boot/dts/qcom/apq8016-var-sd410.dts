@@ -13,12 +13,12 @@
 /dts-v1/;
 
 #include "apq8016.dtsi"
-#include "apq8016-var-dt410.dtsi"
+#include "apq8016-var-sd410.dtsi"
 
 
 / {
 	model = "Variscite VAR-DT410CustomBoard";
-	compatible = "qcom,apq8016", "qcom,var-dt410";
+	compatible = "qcom,apq8016";
 	qcom,msm-id = <206 0>, <247 0>;
 	qcom,board-id = <24 0>;
 };
