@@ -338,10 +338,15 @@
 };
 
 &pm8916_pon {
+	qcom,pon_1 {
+		qcom,s1-timer = <2000>;
+		qcom,s2-timer = <500>;
+	};
 	qcom,pon_2 { /* Setting PM_RESET_IN as BACK key */
 		linux,code = <158>;
 	};
 };
+
 
 &pm8916_mpps {
 	mpp@a300 { /* MPP 4 */
