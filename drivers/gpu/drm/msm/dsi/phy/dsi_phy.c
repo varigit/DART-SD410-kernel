@@ -133,7 +133,7 @@ int msm_dsi_dphy_timing_calc(struct msm_dsi_dphy_timing *timing,
 	timing->ta_sure = 0;
 	timing->ta_get = 4;
 
-	DBG("PHY timings: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
+	printk("PHY timings: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
 		timing->clk_pre, timing->clk_post, timing->clk_zero,
 		timing->clk_trail, timing->clk_prepare, timing->hs_exit,
 		timing->hs_zero, timing->hs_prepare, timing->hs_trail,
