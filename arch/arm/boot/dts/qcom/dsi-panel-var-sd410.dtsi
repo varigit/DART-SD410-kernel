@@ -16,7 +16,7 @@
 		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
 		qcom,mdss-dsi-panel-type = "dsi_video_mode";
 		qcom,mdss-dsi-panel-destination = "display_1";
-		qcom,mdss-dsi-panel-framerate = <60>;
+		qcom,mdss-dsi-panel-framerate = <120>;
 		qcom,mdss-dsi-virtual-channel-id = <0>;
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-panel-width = <800>;
@@ -52,7 +52,7 @@
 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
 		qcom,mdss-dsi-mdp-trigger = "none";
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
-		qcom,mdss-dsi-bl-pmic-pwm-frequency = <10000>;
+		qcom,mdss-dsi-bl-pmic-pwm-frequency = <7575>;
 		qcom,mdss-dsi-bl-pmic-bank-select = <0>;
 		qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
 		qcom,mdss-dsi-reset-sequence = <1 10>;//selects DSI routing to DSI to LVDS bridge
