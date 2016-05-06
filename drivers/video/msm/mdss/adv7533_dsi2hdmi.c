@@ -712,9 +712,11 @@ static int adv7533_probe(struct i2c_client *client_,
 		}
 
 		if (pdata->adv_output) {
-			gpio_set_value(pdata->switch_gpio, 0);
+			if (gpio_is_valid(pdata->switch_gpio))
+				gpio_set_value(pdata->switch_gpio, 0);
 		} else {
-			gpio_set_value(pdata->switch_gpio, 1);
+			if (gpio_is_valid(pdata->switch_gpio))
+				gpio_set_value(pdata->switch_gpio, 1);
 			goto p_err;
 		}
 	}

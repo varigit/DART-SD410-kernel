@@ -89,7 +89,7 @@ dtb-$(CONFIG_ARCH_MSM8916) += msm8916-cdp.dtb \
 	msm8916-qrd-skut1.dtb \
 	apq8016-mtp.dtb \
 	apq8016-mtp-smb1360.dtb \
-	apq8016-sbc.dtb \
+	apq8016-var-sd410.dtb \
 	msm8939-qrd-skuk.dtb \
 	msm8939-qrd-skul.dtb \
 	msm8939-cdp.dtb \
