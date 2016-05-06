@@ -81,6 +81,8 @@ struct ft5x06_ts_platform_data {
 	bool resume_in_workqueue;
 	int (*power_init)(bool);
 	int (*power_on)(bool);
+	bool mirror_h;
+	bool mirror_v;
 };
 
 #endif
