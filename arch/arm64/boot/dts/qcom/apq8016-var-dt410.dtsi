@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#define HDMI_DISPLAY
+/* #define HDMI_DISPLAY */
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/sound/apq8016-lpass.h>
@@ -331,6 +331,13 @@
 			gpios = <&pm8916_mpps 3 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "bt";
 			default-state = "off";
+		};
+
+		led@7 {
+			label = "lan";
+			gpios = <&msmgpio 96 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "on";
 		};
 	};
 
