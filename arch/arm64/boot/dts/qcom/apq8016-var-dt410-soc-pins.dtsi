@@ -6,12 +6,12 @@
 	msmgpio_leds: msmgpio_leds {
 		pinmux {
 			function = "gpio";
-			pins = "gpio21", "gpio120";
+			pins = "gpio21", "gpio120","gpio96";
 		};
 		pinconf {
-			pins = "gpio21", "gpio120";
+			pins = "gpio21", "gpio120","gpio96";
 			drive-strength = <16>;
-			output-low;
+			output-high;
 		};
 	};
 
