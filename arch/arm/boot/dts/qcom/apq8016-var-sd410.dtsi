@@ -465,6 +465,26 @@
 	qcom,boot-indication-enabled;
 };
 
+&spi_0 {
+	gpios = <&msm_gpio 19 0>, /* CLK  */
+			<&msm_gpio 17 0>, /* MISO */
+			<&msm_gpio 16 0>; /* MOSI */
+	cs-gpios = <&msm_gpio 18 0>;
+
+	lattice,spi-usb@0{
+		status = "disabled";
+	};
+	
+	spidev@0 {
+		compatible = "spidev";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+		spi-cpol = <1>;
+		spi-cpha = <1>;
+		status = "ok";
+	};
+};
+
 &spmi_bus {
 	qcom,pm8916@0 {
 		qcom,leds@a100 { /* WLAN LED */
