@@ -133,12 +133,18 @@ int msm_dsi_dphy_timing_calc(struct msm_dsi_dphy_timing *timing,
 	timing->ta_sure = 0;
 	timing->ta_get = 4;
 
-	DBG("PHY timings: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
+	printk("PHY timings: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x pre=%02x post=%02x esc_clk=%d bitrate=%d\n",
+		timing->clk_zero,timing->clk_trail,timing->clk_prepare,timing->clk_zero/255,
+		timing->hs_exit,timing->hs_zero,timing->hs_prepare,timing->hs_trail,timing->hs_rqst,
+		timing->ta_go,timing->ta_get,timing->clk_pre,timing->clk_post,esc_rate,bit_rate);
+	
+/*	
+	printk("PHY timings: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
 		timing->clk_pre, timing->clk_post, timing->clk_zero,
 		timing->clk_trail, timing->clk_prepare, timing->hs_exit,
 		timing->hs_zero, timing->hs_prepare, timing->hs_trail,
 		timing->hs_rqst);
-
+*/
 	return 0;
 }
 

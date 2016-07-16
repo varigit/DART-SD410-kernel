@@ -1,6 +1,7 @@
 ccflags-y := -Iinclude/drm
 
 obj-$(CONFIG_DRM_I2C_ADV7511) += adv7511.o adv7511_audio.o
+obj-$(CONFIG_DRM_I2C_SN65DSI84) += sn65dsi84-dsi2lvds.o
 
 ch7006-y := ch7006_drv.o ch7006_mode.o
 obj-$(CONFIG_DRM_I2C_CH7006) += ch7006.o
