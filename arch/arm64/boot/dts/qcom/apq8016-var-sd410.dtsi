@@ -271,6 +271,16 @@
 			status = "ok";
 			regulator-always-on;
 		}; 
+		lan_reset: lan_reset {
+
+			compatible = "regulator-fixed";
+			regulator-name = "lan_reset";
+	                gpio = <&msmgpio 96 GPIO_ACTIVE_HIGH>;
+			startup-delay-us = <70000>;
+			enable-active-high;
+			regulator-always-on;
+			status = "ok";
+		}; 
 	};
 #ifdef HDMI_DISPLAY
 	adv7533_backlight: adv7533_backlight {
@@ -341,12 +351,6 @@
 			gpios = <&pm8916_mpps 3 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "bt";
 			default-state = "off";
-		};
-		led@7 {
-			label = "lan";
-			gpios = <&msmgpio 96 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "none";
-			default-state = "on";
 		};
 	};
 
