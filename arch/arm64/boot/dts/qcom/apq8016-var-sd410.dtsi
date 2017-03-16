@@ -184,7 +184,7 @@
 										0x28 0x00 0x00 0x00 0x00 0x00 0x00 0x00 
 										0x00 0x00 0x00 0x01>;
 			};
-			
+
 #ifdef HDMI_DISPLAY
 			adv_bridge: bridge@39 {
 				status = "ok";
@@ -209,6 +209,11 @@
 
 			};
 #endif
+			/* DS1307 RTC module */
+			rtc@0x68 {
+				compatible = "dallas,ds1307";
+				reg = <0x68>;
+			};
 		};
 
 		i2c@78ba000 {
@@ -585,4 +590,8 @@
 
 &vidc {
 	status = "okay";
+};
+
+&pm8916_rtc {
+        status = "disabled";
 };
