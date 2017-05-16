@@ -85,4 +85,53 @@
 			bias-pull-up;
 		};
 	};
+
+	/* add pingrp for touchscreen */
+	pmx_ts_int_active:pmx_ts_int_active {
+		pinmux {
+			function = "gpio";
+			pins = "gpio13";
+		};
+		pinconf {
+			pins = "gpio13";
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+
+	pmx_ts_int_suspend:pmx_ts_int_suspend {
+		pinmux {
+			function = "gpio";
+			pins = "gpio13";
+		};
+		pinconf {
+			pins = "gpio13";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	pmx_ts_reset_active:pmx_ts_reset_active {
+		pinmux {
+			function = "gpio";
+			pins = "gpio12";
+		};
+		pinconf {
+			pins = "gpio12";
+			drive-strength = <16>;
+			bias-pull-up;
+		};
+	};
+
+	pmx_ts_reset_suspend:pmx_ts_reset_suspend {
+		pinmux {
+			function = "gpio";
+			pins = "gpio12";
+		};
+		pinconf {
+			pins = "gpio12";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
 };
