@@ -117,6 +117,12 @@ config ARCH_QCOM
 	help
 	  This enables support for the ARMv8 based Qualcomm chipsets.
 
+config ARCH_DART
+	bool "Variscite Platforms"
+	select ARCH_QCOM
+	help
+	  This enables support for the Variscite DART-SD410 platform
+
 config ARCH_ROCKCHIP
 	bool "Rockchip Platforms"
 	select ARCH_HAS_RESET_CONTROLLER

@@ -111,6 +111,7 @@ zinstall install:
 	$(Q)$(MAKE) $(build)=$(boot) $@
 
 %.dtb: scripts
+	echo $(Q)$(MAKE) $(build)=$(boot)/dts $(boot)/dts/$@
 	$(Q)$(MAKE) $(build)=$(boot)/dts $(boot)/dts/$@
 
 PHONY += dtbs dtbs_install
