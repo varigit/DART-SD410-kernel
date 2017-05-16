@@ -111,9 +111,43 @@
 		};
 
 		i2c@78ba000 {
-		/* On Low speed expansion */
-			label = "LS-I2C1";
+			label = "I2C1";
 			status = "okay";
+
+			focaltech@38{
+				compatible = "focaltech,5x06";
+				reg = <0x38>;
+				interrupt-parent = <&msmgpio>;
+				interrupts = <13 0x2>;
+				vdd-supply = <&vph_pwr_vreg>;
+				vcc_i2c-supply = <&vph_pwr_vreg>;
+				pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
+				pinctrl-0 = <&pmx_ts_int_active &pmx_ts_reset_active>;
+				pinctrl-1 = <&pmx_ts_int_suspend &pmx_ts_reset_suspend>;
+				focaltech,name = "ft5x06";
+				focaltech,family-id = <0x54>;
+				focaltech,reset-gpio = <&msmgpio 12 0x00>;
+				focaltech,irq-gpio = <&msmgpio 13 0x00>;
+				focaltech,display-coords = <0 0 800 480>;
+				focaltech,hard-reset-delay-ms = <50>;
+				focaltech,soft-reset-delay-ms = <50>;
+				focaltech,no-force-update;
+				focaltech,i2c-pull-up;
+				focaltech,group-id = <1>;
+				focaltech,hard-reset-delay = <20>;
+				focaltech,soft-reset-delay = <150>;
+				focaltech,num-max-touches = <2>;
+				focaltech,fw-name = "ft_8610_qrd_fw.bin";
+				focaltech,fw-delay-aa-ms = <100>;
+				focaltech,fw-delay-55-ms = <30>;
+				focaltech,fw-upgrade-id1 = <0x79>;
+				focaltech,fw-upgrade-id2 = <0x08>;
+				focaltech,fw-delay-readid-ms = <10>;
+				focaltech,fw-delay-era-flsh-ms = <2000>;
+				focaltech,fw-auto-cal;
+				focaltech,mirror_h;
+				focaltech,mirror_v;
+			};
 		};
 
 		spi@78b7000 {
@@ -346,6 +380,13 @@
 			regulator-max-microvolt = <1500000>;
 			regulator-always-on;
 		};
+
+		vph_pwr_vreg: vph_pwr_vreg {
+			compatible = "regulator-fixed";
+			regulator-name = "vph_pwr";
+			status = "ok";
+			regulator-always-on;
+		}; 
 	};
 
 	usb2513 {
