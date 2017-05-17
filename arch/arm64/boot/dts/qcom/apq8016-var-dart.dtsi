@@ -106,6 +106,11 @@
 					};
 				};
 			};
+
+			/* DS1307 RTC module */
+ 			rtc@0x68 {
+ 				compatible = "dallas,ds1307";
+			};
 		};
 
 		i2c@78ba000 {
@@ -399,6 +404,17 @@
 			status = "ok";
 			regulator-always-on;
 		}; 
+
+		lan_reset: lan_reset {
+
+			compatible = "regulator-fixed";
+			regulator-name = "lan_reset";
+	                gpio = <&msmgpio 96 GPIO_ACTIVE_HIGH>;
+			startup-delay-us = <70000>;
+			enable-active-high;
+			regulator-always-on;
+			status = "ok";
+		}; 
 	};
 
 	usb2513 {
@@ -658,4 +674,10 @@
 
 &venus {
 	status = "okay";
+};
+
+&pm8916_0 {
+	rtc@6000 {
+		status = "disabled";
+	};
 };
