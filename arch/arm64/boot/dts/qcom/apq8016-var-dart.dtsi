@@ -151,11 +151,27 @@
 		spi@78b7000 {
 			label = "SPI1";
 			status = "okay";
+			spidev@1 {
+				compatible = "spidev";
+				spi-max-frequency = <50000000>;
+				reg = <0>;
+				spi-cpol = <1>;
+				spi-cpha = <1>;
+				status = "ok";
+			};
 		};
 
 		spi@78b9000 {
 			label = "SPI0";
 			status = "okay";
+			spidev@0 {
+				compatible = "spidev";
+				spi-max-frequency = <50000000>;
+				reg = <0>;
+				spi-cpol = <1>;
+				spi-cpha = <1>;
+				status = "ok";
+			};
 		};
 
 		leds {
