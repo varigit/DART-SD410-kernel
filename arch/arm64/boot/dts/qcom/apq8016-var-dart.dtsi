@@ -41,7 +41,7 @@
 		};
 
 		serial@78af000 {
-			label = "LS-UART0";
+			label = "UART0";
 			status = "okay";
 			pinctrl-names = "default", "sleep";
 			pinctrl-0 = <&blsp1_uart1_default>;
@@ -49,7 +49,7 @@
 		};
 
 		serial@78b0000 {
-			label = "LS-UART1";
+			label = "UART1";
 			status = "okay";
 			pinctrl-names = "default", "sleep";
 			pinctrl-0 = <&blsp1_uart2_default>;
@@ -57,14 +57,12 @@
 		};
 
 		i2c@78b6000 {
-		/* On Low speed expansion */
-			label = "LS-I2C0";
+			label = "I2C0";
 			status = "okay";
 		};
 
 		i2c@78b8000 {
-		/* On High speed expansion */
-			label = "HS-I2C2";
+			label = "I2C2";
 			status = "okay";
 
 			adv_bridge: bridge@39 {
@@ -151,14 +149,12 @@
 		};
 
 		spi@78b7000 {
-		/* On High speed expansion */
-			label = "HS-SPI1";
+			label = "SPI1";
 			status = "okay";
 		};
 
 		spi@78b9000 {
-		/* On Low speed expansion */
-			label = "LS-SPI0";
+			label = "SPI0";
 			status = "okay";
 		};
 
@@ -171,42 +167,42 @@
 			compatible = "gpio-leds";
 
 			led@1 {
-				label = "apq8016-sbc:green:user1";
+				label = "LED1";
 				gpios = <&msmgpio 21 GPIO_ACTIVE_HIGH>;
 				linux,default-trigger = "heartbeat";
 				default-state = "off";
 			};
 
 			led@2 {
-				label = "apq8016-sbc:green:user2";
+				label = "LED2";
 				gpios = <&msmgpio 120 GPIO_ACTIVE_HIGH>;
 				linux,default-trigger = "mmc0";
 				default-state = "off";
 			};
 
 			led@3 {
-				label = "apq8016-sbc:green:user3";
+				label = "LED3";
 				gpios = <&pm8916_gpios 1 GPIO_ACTIVE_HIGH>;
 				linux,default-trigger = "mmc1";
 				default-state = "off";
 			};
 
 			led@4 {
-				label = "apq8016-sbc:green:user4";
+				label = "LED4";
 				gpios = <&pm8916_gpios 2 GPIO_ACTIVE_HIGH>;
 				linux,default-trigger = "none";
 				default-state = "off";
 			};
 
 			led@5 {
-				label = "apq8016-sbc:yellow:wlan";
+				label = "wlan";
 				gpios = <&pm8916_mpps 2 GPIO_ACTIVE_HIGH>;
 				linux,default-trigger = "phy0rx";
 				default-state = "off";
 			};
 
 			led@6 {
-				label = "apq8016-sbc:blue:bt";
+				label = "bt";
 				gpios = <&pm8916_mpps 3 GPIO_ACTIVE_HIGH>;
 				linux,default-trigger = "hci0-power";
 				default-state = "off";
@@ -622,10 +618,6 @@
 		regulator-max-microvolt = <3337000>;
 	};
 
-	/**
-	 * 1.8v required on LS expansion
-	 * for mezzanine boards
-	 */
 	l15 {
 		regulator-min-microvolt = <1750000>;
 		regulator-max-microvolt = <3337000>;
