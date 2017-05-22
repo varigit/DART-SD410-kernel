@@ -14,7 +14,7 @@
 /dts-v1/;
 
 #include "apq8016-var-dart.dtsi"
-#include "apq8016-var-dart-lvds.dtsi"
+#include "apq8016-var-dart-hdmi.dtsi"
 
 / {
 	model = "Variscite LTD. VAR-DART410";
