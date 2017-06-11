@@ -20,6 +20,7 @@
 #include <linux/delay.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/gpio/consumer.h>
 
 #if defined(CONFIG_FB)
 #include <linux/notifier.h>
@@ -121,6 +122,13 @@ static int sn65dsi84_probe(struct i2c_client *client,
 	int values[100];
 	int chipid[]={0x35, 0x38, 0x49, 0x53, 0x44, 0x20, 0x20, 0x20, 0x01};
 	char address,value;
+	struct gpio_desc *enable_gpio;
+
+	enable_gpio=devm_gpiod_get_optional(&client->dev, "enable",GPIOD_OUT_HIGH);
+	if (enable_gpio)
+		gpiod_set_value_cansleep(enable_gpio, 1);
+
+	
 	for(i=0;i<sizeof(chipid)/sizeof(int);i++)
 	{
 		address=(char)i;
@@ -183,6 +191,11 @@ static int sn65dsi84_probe(struct i2c_client *client,
 
 static int sn65dsi84_remove(struct i2c_client *client)
 {
+	struct gpio_desc *enable_gpio;
+	
+	enable_gpio=devm_gpiod_get_optional(&client->dev, "enable",GPIOD_OUT_LOW);
+	if (enable_gpio)
+		gpiod_set_value_cansleep(enable_gpio, 0);
 	return 0;
 }
 
