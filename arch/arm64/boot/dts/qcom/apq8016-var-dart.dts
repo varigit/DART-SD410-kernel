@@ -15,7 +15,7 @@
 
 #include "apq8016-var-dart.dtsi"
 
-#idef HDMI_DISPLAY
+#ifdef HDMI_DISPLAY
 	#include "apq8016-var-dart-hdmi.dtsi"
 #else
 	#include "apq8016-var-dart-lvds.dtsi"
