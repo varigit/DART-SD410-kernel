@@ -14,9 +14,13 @@
 /dts-v1/;
 
 #include "apq8016-var-dart.dtsi"
-#include "apq8016-var-dart-lvds.dtsi"
 
+#idef HDMI_DISPLAY
+	#include "apq8016-var-dart-hdmi.dtsi"
+#else
+	#include "apq8016-var-dart-lvds.dtsi"
+#endif
 / {
 	model = "Variscite LTD. VAR-DART410";
-	compatible = "variscite,var-dart410","qcom,apq8016-sbc", "qcom,apq8016", "qcom,sbc";
+	compatible ="qcom,apq8016-dart", "qcom,apq8016", "qcom,dart";
 };
