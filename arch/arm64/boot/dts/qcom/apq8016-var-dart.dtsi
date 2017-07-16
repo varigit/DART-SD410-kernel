@@ -395,10 +395,6 @@
 		port@0 {
 			reg = <0>;
 			csiphy0_ep: endpoint {
-				clock-lanes = <1>;
-				data-lanes = <0 2>;
-				qcom,settle-cnt = <0xe>;
-				remote-endpoint = <&ov5645_ep>;
 				status = "disabled";
 			};
 		};
@@ -408,8 +404,8 @@
 				clock-lanes = <1>;
 				data-lanes = <0 2>;
 				qcom,settle-cnt = <0xe>;
-				remote-endpoint = <&ov5645_2_ep>;
-				status = "disabled";
+				remote-endpoint = <&ov5645_ep>;
+				status = "ok";
 			};
 		};
 	};
@@ -418,37 +414,9 @@
 &blsp_i2c6 {
 	status = "ok";
 
-	camera_rear@76 {
+	camera_front@78 {
 		compatible = "ovti,ov5645";
-		reg = <0x76>;
-
-		enable-gpios = <&msmgpio 34 0>;
-		reset-gpios = <&msmgpio 35 1>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&camera_rear_default>;
-
-		clocks = <&gcc GCC_CAMSS_MCLK0_CLK>;
-		clock-names = "xclk";
-		clock-frequency = <23880000>;
-
-		vdddo-supply = <&camera_vdddo_1v8>;
-		vdda-supply = <&camera_vdda_2v8>;
-		vddd-supply = <&camera_vddd_1v5>;
-
-		status = "disabled";
-
-		port {
-			ov5645_ep: endpoint {
-				clock-lanes = <1>;
-				data-lanes = <0 2>;
-				remote-endpoint = <&csiphy0_ep>;
-			};
-		};
-	};
-
-	camera_front@74 {
-		compatible = "ovti,ov5645";
-		reg = <0x74>;
+		reg = <0x78>;
 
 		enable-gpios = <&msmgpio 33 0>;
 		reset-gpios = <&msmgpio 28 1>;
@@ -463,10 +431,10 @@
 		vdda-supply = <&camera_vdda_2v8>;
 		vddd-supply = <&camera_vddd_1v5>;
 
-		status = "disabled";
+		status = "ok";
 
 		port {
-			ov5645_2_ep: endpoint {
+			ov5645_ep: endpoint {
 				clock-lanes = <1>;
 				data-lanes = <0 2>;
 				remote-endpoint = <&csiphy1_ep>;
