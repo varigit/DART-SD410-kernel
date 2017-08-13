@@ -12,7 +12,7 @@
  */
 
 /dts-v1/;
-
+#define HDMI_DISPLAY
 #include "apq8016-var-dart.dtsi"
 
 #ifdef HDMI_DISPLAY
