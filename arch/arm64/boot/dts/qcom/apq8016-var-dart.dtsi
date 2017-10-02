@@ -289,7 +289,8 @@
                         qcom,model = "DB410c";
                         qcom,audio-routing =
                                 "AMIC2", "MIC BIAS Internal2",
-                                "AMIC3", "MIC BIAS External1";
+								"MIC BIAS Internal1", "Secondary Mic",
+								"AMIC1", "MIC BIAS Internal1";
 
                         internal-codec-playback-dai-link@0 {            /* I2S - Internal codec */
                                 link-name = "WCD";
