@@ -88,8 +88,8 @@
 				pinctrl-1 = <&pmx_ts_int_suspend &pmx_ts_reset_suspend>;
 				focaltech,name = "ft5x06";
 				focaltech,family-id = <0x54>;
-				focaltech,reset-gpio = <&msmgpio 12 0x00>;
-				focaltech,irq-gpio = <&msmgpio 13 0x00>;
+				focaltech,reset-gpio = <&msmgpio 12 GPIO_ACTIVE_HIGH>;
+				focaltech,irq-gpio = <&msmgpio 13 GPIO_ACTIVE_HIGH>;
 				focaltech,display-coords = <0 0 800 480>;
 				focaltech,hard-reset-delay-ms = <50>;
 				focaltech,soft-reset-delay-ms = <50>;
@@ -208,7 +208,7 @@
 			pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
 			pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
 
-			cd-gpios = <&msmgpio 38 0x1>;
+			cd-gpios = <&msmgpio 38 GPIO_ACTIVE_LOW>;
 			status = "okay";
 		};
 
@@ -404,7 +404,6 @@
 			csiphy1_ep: endpoint {
 				clock-lanes = <1>;
 				data-lanes = <0 2>;
-				qcom,settle-cnt = <0xe>;
 				remote-endpoint = <&ov5645_ep>;
 				status = "ok";
 			};
@@ -419,8 +418,8 @@
 		compatible = "ovti,ov5645";
 		reg = <0x78>;
 
-		enable-gpios = <&msmgpio 33 0>;
-		reset-gpios = <&msmgpio 28 1>;
+		enable-gpios = <&msmgpio 33 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&msmgpio 28 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&camera_front_default>;
 
