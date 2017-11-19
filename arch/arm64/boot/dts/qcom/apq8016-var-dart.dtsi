@@ -346,17 +346,6 @@
 			status = "ok";
 			regulator-always-on;
 		}; 
-
-		lan_reset: lan_reset {
-
-			compatible = "regulator-fixed";
-			regulator-name = "lan_reset";
-	                gpio = <&msmgpio 96 GPIO_ACTIVE_HIGH>;
-			startup-delay-us = <70000>;
-			enable-active-high;
-			regulator-always-on;
-			status = "ok";
-		}; 
 	};
 
 	usb2513 {
