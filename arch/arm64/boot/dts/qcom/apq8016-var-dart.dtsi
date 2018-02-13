@@ -379,6 +379,8 @@
 };
 
 &camss {
+	status = "ok";
+
 	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -400,7 +402,7 @@
 	};
 };
 
-&blsp_i2c6 {
+&cci {
 	status = "ok";
 
 	camera_front@78 {
