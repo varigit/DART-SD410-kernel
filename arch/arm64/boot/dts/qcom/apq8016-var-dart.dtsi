@@ -400,7 +400,7 @@
 	};
 };
 
-&blsp_i2c6 {
+&cci {
 	status = "ok";
 
 	camera_front@78 {
