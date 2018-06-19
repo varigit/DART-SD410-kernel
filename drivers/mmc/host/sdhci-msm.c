@@ -270,7 +270,7 @@ out:
  * setting for SD3.0 UHS-I card read operation (in SDR104
  * timing mode) or for eMMC4.5 card read operation (in
  * HS400/HS200 timing mode).
- * Select the 3/4 of the range and configure the DLL with the
+ * Select the median value of the range and configure the DLL with the
  * selected DLL clock output phase.
  */
 
@@ -361,9 +361,7 @@ static int msm_find_most_appropriate_phase(struct sdhci_host *host,
 		}
 	}
 
-	i = (curr_max * 3) / 4;
-	if (i)
-		i--;
+	i = curr_max / 2;
 
 	ret = ranges[selected_row_index][i];
 
