@@ -151,8 +151,8 @@
 		};
 
 		blsp1_uart1_active {
-			qcom,pins = <&gp 0>, <&gp 1>, <&gp 2>, <&gp 3>;
-			qcom,num-grp-pins = <4>;
+			qcom,pins = <&gp 0>, <&gp 1>;
+			qcom,num-grp-pins = <2>;
 			qcom,pin-func = <2>;
 		        label = "blsp1_uart1_active";
 
@@ -163,9 +163,9 @@
 		};
 
 		blsp1_uart1_sleep {
-			qcom,pins = <&gp 0>, <&gp 1>, <&gp 2>, <&gp 3>;
-			qcom,num-grp-pins = <4>;
-			qcom,pin-func = <0>;
+			qcom,pins = <&gp 0>, <&gp 1>;
+			qcom,num-grp-pins = <2>;
+			qcom,pin-func = <0>;v
 		        label = "blsp1_uart1_sleep";
 
 			hsuart_sleep: sleep {
