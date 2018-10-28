@@ -165,7 +165,7 @@
 		blsp1_uart1_sleep {
 			qcom,pins = <&gp 0>, <&gp 1>;
 			qcom,num-grp-pins = <2>;
-			qcom,pin-func = <0>;v
+			qcom,pin-func = <0>;
 		        label = "blsp1_uart1_sleep";
 
 			hsuart_sleep: sleep {
