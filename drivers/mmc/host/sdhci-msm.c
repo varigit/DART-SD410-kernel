@@ -255,10 +255,8 @@ static int msm_find_most_appropriate_phase(struct sdhci_host *host,
 			selected_row_index = cnt;
 		}
 	}
-
-	i = (curr_max * 3) / 4;
-	if (i)
-		i--;
+	
+	i = curr_max / 2;
 
 	ret = ranges[selected_row_index][i];
 
