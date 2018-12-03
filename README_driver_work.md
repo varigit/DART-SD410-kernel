@@ -4,16 +4,24 @@ SciAps Environment Setup Instructions for Linux Kernel Driver Work
 1. https://source.android.com/source/requirements
 2. http://variwiki.com/index.php?title=DART-SD410
 
-### Download and Install Ubuntu 16.04
+### Download and Install Ubuntu 14.04
 https://www.ubuntu.com/download/alternative-downloads
 
 ### Download Packages
 ```bash
-sudo apt-get update \
-&& sudo add-apt-repository ppa:openjdk-r/ppa \
-&& sudo add-apt-repository ppa:nilarimogard/webupd8 \
-&& sudo apt-get update \
-&& sudo apt-get -y install build-essential libc6:i386 libncurses5:i386 libstdc++6:i386 libbz2-1.0:i386 git-core gnupg zip zlib1g-dev gcc-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache libgl1-mesa-dev xsltproc unzip libswitch-perl default-jre u-boot-tools mtd-utils lzop xorg-dev libopenal-dev libglew-dev libalut-dev xclip python ruby-dev openvpn minicom curl gperf bison android-tools-adb android-tools-fastboot android-tools-fsutils git g++-multilib lib32z1 libxml2-utils openjdk-7-jdk flex mkisofs bc
+sudo apt-get update
+```
+```bash
+sudo add-apt-repository ppa:openjdk-r/ppa
+```
+```bash
+sudo add-apt-repository ppa:nilarimogard/webupd8
+```
+```bash
+sudo apt-get update
+```
+```bash
+sudo apt-get -y install build-essential libc6:i386 libncurses5:i386 libstdc++6:i386 libbz2-1.0:i386 git-core gnupg zip zlib1g-dev gcc-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache libgl1-mesa-dev xsltproc unzip libswitch-perl default-jre u-boot-tools mtd-utils lzop xorg-dev libopenal-dev libglew-dev libalut-dev xclip python ruby-dev openvpn minicom curl gperf bison android-tools-adb android-tools-fastboot android-tools-fsutils git g++-multilib lib32z1 libxml2-utils openjdk-7-jdk flex mkisofs bc
 ```
 
 ### Download Variscite Resources
