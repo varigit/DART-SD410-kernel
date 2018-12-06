@@ -84,6 +84,13 @@ make update-api
 ```
 as specified in the message.
 
+If you encounter this error:
+"error: unsupported reloc 43"
+just run:
+```bash
+cp /usr/bin/ld.gold prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_64-linux/bin/ld
+```
+
 ### Flashing
 First, reboot the device into the bootloader:
 ```bash
