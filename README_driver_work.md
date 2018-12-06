@@ -75,7 +75,7 @@ cd ~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
 && make -j14 WITH_DEXPREOPT=true WITH_DEXPREOPT_PIC=true DEX_PREOPT_DEFAULT=nostripping | tee log.txt
 ```
 
-### Notes
+### Build Notes
 If you encounter this error:
 "You have tried to change the API from what has been previously approved"
 just run:
@@ -91,18 +91,48 @@ just run:
 cp /usr/bin/ld.gold prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_64-linux/bin/ld
 ```
 
+### System Notes
+If you see "Insufficient Permissions" when using adb, just run:
+```bash
+adb kill-server \
+&& sudo adb start-server \
+&& adb shell
+```
+
+If you see "Read only file system" when attempting to push files onto the device, just adb shell in and then run:
+```bash
+mount -o rw,remount / \
+&& mount -o rw,remount /system \
+&& exit
+```
+
 ### Flashing
 First, reboot the device into the bootloader:
 ```bash
-adb reboot bootloader
+adb kill-server \
+&& sudo adb start-server \
+&& adb reboot bootloader
 ```
-Wait for fastboot, run this command until you see the device displayed:
+Wait for fastboot, run this command until you see a device displayed:
 ```bash
 sudo fastboot devices
 ```
-Flash and Boot!
+Flash and Boot the Entire System!
 ```bash
-cd ~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2/out/target/product/msm8916_64/ \
+AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+&& cd $AOSP_ROOT/out/target/product/msm8916_64/ \
+&& sudo fastboot flash aboot emmc_appsboot.mbn \
+&& sudo fastboot flash persist persist.img \
+&& sudo fastboot flash userdata userdata.img \
+&& sudo fastboot flash system system.img \
+&& sudo fastboot flash recovery recovery.img \
+&& sudo fastboot flash boot boot.img \
+&& sudo fastboot reboot
+```
+Flash just the Linux Kernel and Boot!
+```bash
+AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+&& cd $AOSP_ROOT/out/target/product/msm8916_64/ \
 && sudo fastboot flash boot boot.img \
 && sudo fastboot reboot
 ```
