@@ -4,7 +4,7 @@ SciAps Environment Setup Instructions for Linux Kernel Driver Work
 1. https://source.android.com/source/requirements
 2. http://variwiki.com/index.php?title=DART-SD410
 
-### Download and Install Ubuntu 14.04
+### Download and Install Ubuntu 16.04
 https://www.ubuntu.com/download/alternative-downloads
 
 ### Download Packages
