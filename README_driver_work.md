@@ -67,12 +67,20 @@ cd ~/dart-sd410 \
 && ./SD410c_build.sh
 ```
  
-### Rebuilding
+### Rebuilding Everything
 ```bash
 cd ~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
 && . build/envsetup.sh \
 && lunch msm8916_64-userdebug \
 && make -j14 WITH_DEXPREOPT=true WITH_DEXPREOPT_PIC=true DEX_PREOPT_DEFAULT=nostripping | tee log.txt
+```
+
+### Rebuilding the Kernel
+```bash
+cd ~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+&& . build/envsetup.sh \
+&& lunch msm8916_64-userdebug \
+&& make kernel
 ```
 
 ### Build Notes
