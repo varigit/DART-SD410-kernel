@@ -10,9 +10,11 @@
  * GNU General Public License for more details.
  */
 
+#include "dt-bindings/interrupt-controller/irq.h"
 #include "apq8016-dart.dtsi"
 #include "apq8016-camera-sensor-var-sd410.dtsi"
 #include "dsi-panel-var-sd410.dtsi"
+#include "dsi-panel-COM43H4N10ULC.dtsi"
 
 / {
 	aliases {
@@ -110,6 +112,13 @@
 			focaltech,mirror_h;
 			focaltech,mirror_v;
 		};
+
+		atmel_maxtouch_ts@4a {
+			compatible = "atmel,maxtouch";
+			reg = <0x4a>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <97 IRQ_TYPE_LEVEL_LOW>;
+		};
 	};
 
 	gpio-leds {
@@ -188,12 +197,12 @@
 };
 
 &mdss_dsi0 {
-	qcom,dsi-pref-prim-pan = <&dsi_variscite>;
+	qcom,dsi-pref-prim-pan = <&dsi_variscite_com43h4n>;
 	pinctrl-names = "mdss_default", "mdss_sleep";
 	pinctrl-0 = <&mdss_dsi_active &mdss_te_active &mdss_dsiext_active>;
 	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend &mdss_dsiext_suspend>;
 
-	qcom,platform-reset-gpio = <&msm_gpio 32 0>;
+	qcom,platform-reset-gpio = <&msm_gpio 50 1>;
 
 	qcom,panel-supply-entries {
 			#address-cells = <1>;
