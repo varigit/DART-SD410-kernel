@@ -10,6 +10,7 @@
  * GNU General Public License for more details.
  */
 
+#include "dt-bindings/interrupt-controller/irq.h"
 #include "apq8016-dart.dtsi"
 #include "apq8016-camera-sensor-var-sd410.dtsi"
 #include "dsi-panel-var-sd410.dtsi"
@@ -110,6 +111,13 @@
 			focaltech,fw-auto-cal;
 			focaltech,mirror_h;
 			focaltech,mirror_v;
+		};
+
+		atmel_maxtouch_ts@4a {
+			compatible = "atmel,maxtouch";
+			reg = <0x4a>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <97 IRQ_TYPE_LEVEL_LOW>;
 		};
 	};
 
