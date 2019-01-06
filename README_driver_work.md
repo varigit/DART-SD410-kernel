@@ -36,6 +36,11 @@ mkdir ~/bin \
 && chmod a+x ~/bin/repo
 ```
 
+### Download maxtouch driver configuration
+```bash
+curl https://s3.us-east-2.amazonaws.com/sciaps-firmware-dependencies/maxtouch-ts.raw > ~/dart-sd410/maxtouch-ts.raw
+```
+
 ### Unless you have 16G of Ram, you will need swap memory
 [more on this here](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04)
 ```bash
@@ -119,7 +124,7 @@ mount -o rw,remount / \
 ```
 After exiting adb shell, push the touch controller driver:
 ```bash
-adb push maxtouch-ts.raw /system/lib/firmware/
+adb push ~/dart-sd410/maxtouch-ts.raw /system/lib/firmware/
 ```
 Enter *adb shell* again to set up the touch controller to use this config:
 ```bash
