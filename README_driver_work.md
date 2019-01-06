@@ -9,9 +9,6 @@ https://www.ubuntu.com/download/alternative-downloads
 
 ### Download Packages
 ```bash
-sudo apt-get update
-```
-```bash
 sudo add-apt-repository ppa:openjdk-r/ppa
 ```
 ```bash
@@ -102,12 +99,10 @@ cp /usr/bin/ld.gold prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_
 ### System Notes
 If you see "Insufficient Permissions" when using adb, just run:
 ```bash
-adb kill-server \
-&& sudo adb start-server \
-&& adb shell
+adb kill-server && sudo adb start-server
 ```
 
-If you see "Read only file system" when attempting to push files onto the device, just adb shell in and then run:
+If you see "Read only file system" when attempting to push files onto the device, just *adb shell* in and then run:
 ```bash
 mount -o rw,remount / \
 && mount -o rw,remount /system \
@@ -115,11 +110,25 @@ mount -o rw,remount / \
 ```
 
 ### Flashing
-First, reboot the device into the bootloader:
+First, *adb shell* in and run the following to enable adb push:
 ```bash
-adb kill-server \
-&& sudo adb start-server \
-&& adb reboot bootloader
+mount -o rw,remount / \ 
+&& mount -o rw,remount /system \
+&& mkdir -p /system/lib/firmware/ \ 
+&& exit
+```
+After exiting adb shell, push the touch controller driver:
+```bash
+adb push maxtouch-ts.raw /system/lib/firmware/
+```
+Enter *adb shell* again to set up the touch controller to use this config:
+```bash
+echo "maxtouch-ts.raw" > /sys/class/i2c-dev/i2c-6/device/6-004a/update_cfg \
+&& exit
+```
+Now, reboot the device into the bootloader:
+```bash
+adb reboot bootloader
 ```
 Wait for fastboot, run this command until you see a device displayed:
 ```bash
