@@ -23,7 +23,8 @@ sudo apt-get -y install build-essential libc6:i386 libncurses5:i386 libstdc++6:i
 
 ### Download Variscite Resources
 ```bash
-cd ~/Downloads/ \
+mkdir ~/dart-sd410 \
+&& cd ~/Downloads \
 && wget -m --user=dart-sd410 --password=varSD410 ftp://ftp.variscite.com \
 && mv ~/Downloads/ftp.variscite.com ~/dart-sd410
 ```
