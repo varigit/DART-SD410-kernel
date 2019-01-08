@@ -9,9 +9,6 @@ https://www.ubuntu.com/download/alternative-downloads
 
 ### Download Packages
 ```bash
-sudo apt-get update
-```
-```bash
 sudo add-apt-repository ppa:openjdk-r/ppa
 ```
 ```bash
@@ -26,7 +23,8 @@ sudo apt-get -y install build-essential libc6:i386 libncurses5:i386 libstdc++6:i
 
 ### Download Variscite Resources
 ```bash
-cd ~/Downloads/ \
+mkdir ~/dart-sd410 \
+&& cd ~/Downloads \
 && wget -m --user=dart-sd410 --password=varSD410 ftp://ftp.variscite.com \
 && mv ~/Downloads/ftp.variscite.com ~/dart-sd410
 ```
@@ -37,6 +35,11 @@ mkdir ~/bin \
 && export PATH=~/bin:$PATH \
 && curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo \
 && chmod a+x ~/bin/repo
+```
+
+### Download maxtouch driver configuration
+```bash
+curl https://s3.us-east-2.amazonaws.com/sciaps-firmware-dependencies/maxtouch-ts.raw > ~/dart-sd410/maxtouch-ts.raw
 ```
 
 ### Unless you have 16G of Ram, you will need swap memory
@@ -102,12 +105,10 @@ cp /usr/bin/ld.gold prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_
 ### System Notes
 If you see "Insufficient Permissions" when using adb, just run:
 ```bash
-adb kill-server \
-&& sudo adb start-server \
-&& adb shell
+adb kill-server && sudo adb start-server
 ```
 
-If you see "Read only file system" when attempting to push files onto the device, just adb shell in and then run:
+If you see "Read only file system" when attempting to push files onto the device, just *adb shell* in and then run:
 ```bash
 mount -o rw,remount / \
 && mount -o rw,remount /system \
@@ -115,11 +116,25 @@ mount -o rw,remount / \
 ```
 
 ### Flashing
-First, reboot the device into the bootloader:
+First, *adb shell* in and run the following to enable adb push:
 ```bash
-adb kill-server \
-&& sudo adb start-server \
-&& adb reboot bootloader
+mount -o rw,remount / \ 
+&& mount -o rw,remount /system \
+&& mkdir -p /system/lib/firmware/ \ 
+&& exit
+```
+After exiting adb shell, push the touch controller driver:
+```bash
+adb push ~/dart-sd410/maxtouch-ts.raw /system/lib/firmware/
+```
+Enter *adb shell* again to set up the touch controller to use this config:
+```bash
+echo "maxtouch-ts.raw" > /sys/class/i2c-dev/i2c-6/device/6-004a/update_cfg \
+&& exit
+```
+Now, reboot the device into the bootloader:
+```bash
+adb reboot bootloader
 ```
 Wait for fastboot, run this command until you see a device displayed:
 ```bash
@@ -127,9 +142,25 @@ sudo fastboot devices
 ```
 Flash and Boot the Entire System!
 ```bash
-AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+RESCUE_IMAGES_ROOT=~/dart-sd410/Software/Android/Android_5/RescueImages \
+&& cd $RESCUE_IMAGES_ROOT \
+&& sudo fastboot flash partition gpt_both0.bin \
+&& sudo fastboot flash hyp hyp.mbn \
+&& sudo fastboot flash modem NON-HLOS.bin \
+&& sudo fastboot flash rpm rpm.mbn \
+&& sudo fastboot flash sbl1 sbl1.mbn \
+&& sudo fastboot flash sec sec.dat \
+&& sudo fastboot flash tz tz.mbn \
+&& sudo fastboot flash sbl1bak sbl1.mbn \
+&& sudo fastboot flash hypbak hyp.mbn \
+&& sudo fastboot flash rpmbak rpm.mbn \
+&& sudo fastboot flash tzbak tz.mbn \
+&& sudo fastboot erase cache \
+&& sudo fastboot erase devinfo \
+&& AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
 && cd $AOSP_ROOT/out/target/product/msm8916_64/ \
 && sudo fastboot flash aboot emmc_appsboot.mbn \
+&& sudo fastboot flash abootbak emmc_appsboot.mbn \
 && sudo fastboot flash persist persist.img \
 && sudo fastboot flash userdata userdata.img \
 && sudo fastboot flash system system.img \
@@ -137,6 +168,7 @@ AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollip
 && sudo fastboot flash boot boot.img \
 && sudo fastboot reboot
 ```
+
 Flash just the Linux Kernel and Boot!
 ```bash
 AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
