@@ -88,7 +88,6 @@ If you encounter this error: *You have tried to change the API from what has bee
 ```bash
 make update-api
 ```
-
 If you encounter this error: *unsupported reloc 43*, just run:
 ```bash
 AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
@@ -100,7 +99,6 @@ If you see *Insufficient Permissions* when using adb, just run:
 ```bash
 adb kill-server && sudo adb start-server
 ```
-
 If you see *Read only file system* when attempting to push files onto the device, just **adb shell** in and run:
 ```bash
 mount -o rw,remount / \
