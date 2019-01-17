@@ -116,27 +116,11 @@ mount -o rw,remount / \
 ```
 
 ### Flashing
-First, *adb shell* in and run the following to enable adb push:
-```bash
-mount -o rw,remount / \ 
-&& mount -o rw,remount /system \
-&& mkdir -p /system/lib/firmware/ \ 
-&& exit
-```
-After exiting adb shell, push the touch controller driver:
-```bash
-adb push ~/dart-sd410/maxtouch-ts.raw /system/lib/firmware/
-```
-Enter *adb shell* again to set up the touch controller to use this config:
-```bash
-echo "maxtouch-ts.raw" > /sys/class/i2c-dev/i2c-6/device/6-004a/update_cfg \
-&& exit
-```
-Now, reboot the device into the bootloader:
+Reboot the device into the bootloader (may already be in the bootloader):
 ```bash
 adb reboot bootloader
 ```
-Wait for fastboot, run this command until you see a device displayed:
+Run this command until you see your device displayed:
 ```bash
 sudo fastboot devices
 ```
@@ -175,6 +159,24 @@ AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollip
 && cd $AOSP_ROOT/out/target/product/msm8916_64/ \
 && sudo fastboot flash boot boot.img \
 && sudo fastboot reboot
+```
+
+### Configuring Touch Screen
+First, *adb shell* in and run the following to enable adb push:
+```bash
+mount -o rw,remount / \ 
+&& mount -o rw,remount /system \
+&& mkdir -p /system/lib/firmware/ \ 
+&& exit
+```
+After exiting adb shell, push the touch controller driver:
+```bash
+adb push ~/dart-sd410/maxtouch-ts.raw /system/lib/firmware/
+```
+Enter *adb shell* again to map the touch controller to this configuration:
+```bash
+echo "maxtouch-ts.raw" > /sys/class/i2c-dev/i2c-6/device/6-004a/update_cfg \
+&& exit
 ```
 
 ### Submitting Changes
