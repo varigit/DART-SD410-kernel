@@ -1,4 +1,4 @@
-SciAps Environment Setup Instructions for Linux Kernel Driver Work
+# Configuring Ubuntu 16.04 LTS Dev Environment for Kernel Work
 
 ### Additional Resources
 1. https://source.android.com/source/requirements
@@ -23,9 +23,9 @@ sudo apt-get -y install build-essential libc6:i386 libncurses5:i386 libstdc++6:i
 
 ### Download Variscite Resources
 ```bash
-mkdir ~/dart-sd410 \
-&& cd ~/Downloads \
+cd ~/Downloads \
 && wget -m --user=dart-sd410 --password=varSD410 ftp://ftp.variscite.com \
+&& mkdir ~/dart-sd410 \
 && mv ~/Downloads/ftp.variscite.com ~/dart-sd410
 ```
 
@@ -35,11 +35,6 @@ mkdir ~/bin \
 && export PATH=~/bin:$PATH \
 && curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo \
 && chmod a+x ~/bin/repo
-```
-
-### Download maxtouch driver configuration
-```bash
-curl https://s3.us-east-2.amazonaws.com/sciaps-firmware-dependencies/maxtouch-ts.raw > ~/dart-sd410/maxtouch-ts.raw
 ```
 
 ### Unless you have 16G of Ram, you will need swap memory
@@ -72,43 +67,41 @@ cd ~/dart-sd410 \
  
 ### Rebuilding Everything
 ```bash
-cd ~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+&& cd $AOSP_ROOT \
 && . build/envsetup.sh \
 && lunch msm8916_64-userdebug \
-&& make -j14 WITH_DEXPREOPT=true WITH_DEXPREOPT_PIC=true DEX_PREOPT_DEFAULT=nostripping | tee log.txt
+&& m -j14 WITH_DEXPREOPT=true WITH_DEXPREOPT_PIC=true DEX_PREOPT_DEFAULT=nostripping | tee log.txt
 ```
 
 ### Rebuilding the Kernel
 ```bash
-cd ~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+&& cd $AOSP_ROOT \
 && . build/envsetup.sh \
 && lunch msm8916_64-userdebug \
-&& make kernel
+&& m kernel
 ```
 
 ### Build Notes
-If you encounter this error:
-"You have tried to change the API from what has been previously approved"
-just run:
+If you encounter this error: *You have tried to change the API from what has been previously approved*, just run:
 ```bash
 make update-api
 ```
-as specified in the message.
 
-If you encounter this error:
-"error: unsupported reloc 43"
-just run:
+If you encounter this error: *unsupported reloc 43*, just run:
 ```bash
-cp /usr/bin/ld.gold prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_64-linux/bin/ld
+AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
+&& cp /usr/bin/ld.gold $AOSP_ROOT/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_64-linux/bin/ld
 ```
 
 ### System Notes
-If you see "Insufficient Permissions" when using adb, just run:
+If you see *Insufficient Permissions* when using adb, just run:
 ```bash
 adb kill-server && sudo adb start-server
 ```
 
-If you see "Read only file system" when attempting to push files onto the device, just *adb shell* in and then run:
+If you see *Read only file system* when attempting to push files onto the device, just **adb shell** in and run:
 ```bash
 mount -o rw,remount / \
 && mount -o rw,remount /system \
@@ -124,7 +117,7 @@ Run this command until you see your device displayed:
 ```bash
 sudo fastboot devices
 ```
-Flash and Boot the Entire System!
+Flash the System and Boot
 ```bash
 RESCUE_IMAGES_ROOT=~/dart-sd410/Software/Android/Android_5/RescueImages \
 && cd $RESCUE_IMAGES_ROOT \
@@ -153,7 +146,7 @@ RESCUE_IMAGES_ROOT=~/dart-sd410/Software/Android/Android_5/RescueImages \
 && sudo fastboot reboot
 ```
 
-Flash just the Linux Kernel and Boot!
+Flash only the Linux Kernel and Boot
 ```bash
 AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollipop_P2 \
 && cd $AOSP_ROOT/out/target/product/msm8916_64/ \
@@ -162,7 +155,11 @@ AOSP_ROOT=~/dart-sd410/source/APQ8016_410C_LA.BR.1.2.4-01810-8x16.0_5.1.1_Lollip
 ```
 
 ### Configuring Touch Screen
-First, *adb shell* in and run the following to enable adb push:
+First, download the maxtouch driver configuration
+```bash
+curl https://s3.us-east-2.amazonaws.com/sciaps-firmware-dependencies/maxtouch-ts.raw > ~/dart-sd410/maxtouch-ts.raw
+```
+Then, *adb shell* in and run the following to enable adb push:
 ```bash
 mount -o rw,remount / \ 
 && mount -o rw,remount /system \
