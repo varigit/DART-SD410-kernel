@@ -36,9 +36,11 @@
 	};
 
 	backlight: backlight {
-		compatible = "gpio-backlight";
-		gpios = <&pm8916_mpps 4 GPIO_ACTIVE_HIGH>;
-		default-on;
+		compatible = "pwm-backlight";
+		pwms = <&pm8916_pwm 0 5000000>;
+
+		brightness-levels = <0 64 128 192 256>;
+		default-brightness-level = <4>;
 	};
 };
 
