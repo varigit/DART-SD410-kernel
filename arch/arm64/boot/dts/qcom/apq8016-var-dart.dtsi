@@ -1,0 +1,577 @@
+/*
+ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "msm8916.dtsi"
+#include "pm8916.dtsi"
+#include "apq8016-var-dart-soc-pins.dtsi"
+#include "apq8016-var-dart-pmic-pins.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/sound/apq8016-lpass.h>
+
+/ {
+	aliases {
+		serial0 = &blsp1_uart2;
+		serial1 = &blsp1_uart1;
+		usid0 = &pm8916_0;
+		i2c0	= &blsp_i2c2;
+		i2c1	= &blsp_i2c6;
+		i2c3	= &blsp_i2c4;
+		spi0	= &blsp_spi5;
+		spi1	= &blsp_spi3;
+	};
+
+	chosen {
+		stdout-path = "serial0";
+	};
+
+	reserved-memory {
+		ramoops@bff00000{
+			compatible = "ramoops";
+			reg = <0x0 0xbff00000 0x0 0x100000>;
+
+			record-size = <0x20000>;
+			console-size = <0x20000>;
+			ftrace-size = <0x20000>;
+		};
+	};
+
+	soc {
+		dma@7884000 {
+			status = "okay";
+		};
+
+		serial@78af000 {
+			label = "UART0";
+			status = "okay";
+			pinctrl-names = "default", "sleep";
+			pinctrl-0 = <&blsp1_uart1_default>;
+			pinctrl-1 = <&blsp1_uart1_sleep>;
+		};
+
+		serial@78b0000 {
+			label = "UART1";
+			status = "okay";
+			pinctrl-names = "default", "sleep";
+			pinctrl-0 = <&blsp1_uart2_default>;
+			pinctrl-1 = <&blsp1_uart2_sleep>;
+		};
+
+		i2c@78b6000 {
+			label = "I2C0";
+			status = "okay";
+		};
+
+		i2c2:i2c@78b8000 {
+			label = "I2C2";
+			status = "okay";
+
+			/* DS1307 RTC module */
+ 			rtc@0x68 {
+				reg = <0x68>;
+ 				compatible = "dallas,ds1307";
+			};
+		};
+
+
+
+		spi@78b7000 {
+			label = "SPI1";
+			status = "okay";
+			spidev@1 {
+				compatible = "spidev";
+				spi-max-frequency = <50000000>;
+				reg = <0>;
+				spi-cpol = <1>;
+				spi-cpha = <1>;
+				status = "disabled";
+			};
+		};
+
+		spi@78b9000 {
+			label = "SPI0";
+			status = "okay";
+			spidev@0 {
+				compatible = "spidev";
+				spi-max-frequency = <50000000>;
+				reg = <0>;
+				spi-cpol = <1>;
+				spi-cpha = <1>;
+				status = "disabled";
+			};
+		};
+
+		leds {
+			pinctrl-names = "default";
+			pinctrl-0 = <&msmgpio_leds>,
+				<&pm8916_gpios_leds>,
+				<&pm8916_mpps_leds>;
+
+			compatible = "gpio-leds";
+
+			led@1 {
+				label = "LED1";
+				gpios = <&msmgpio 21 GPIO_ACTIVE_HIGH>;
+				linux,default-trigger = "heartbeat";
+				default-state = "off";
+			};
+
+			led@2 {
+				label = "LED2";
+				gpios = <&msmgpio 120 GPIO_ACTIVE_HIGH>;
+				linux,default-trigger = "mmc0";
+				default-state = "off";
+			};
+
+			led@3 {
+				label = "LED3";
+				gpios = <&pm8916_gpios 1 GPIO_ACTIVE_HIGH>;
+				linux,default-trigger = "mmc1";
+				default-state = "off";
+			};
+
+			led@4 {
+				label = "LED4";
+				gpios = <&pm8916_gpios 2 GPIO_ACTIVE_HIGH>;
+				linux,default-trigger = "none";
+				default-state = "off";
+				status = "disabled";
+			};
+
+			led@5 {
+				label = "wlan";
+				gpios = <&pm8916_mpps 2 GPIO_ACTIVE_HIGH>;
+				linux,default-trigger = "phy0tx";
+				default-state = "off";
+			};
+
+			led@6 {
+				label = "bt";
+				gpios = <&pm8916_mpps 3 GPIO_ACTIVE_HIGH>;
+				linux,default-trigger = "bluetooth-power";
+				default-state = "off";
+			};
+		};
+
+		sdhci@07824000 {
+			vmmc-supply = <&pm8916_l8>;
+			vqmmc-supply = <&pm8916_l5>;
+
+			pinctrl-names = "default", "sleep";
+			pinctrl-0 = <&sdc1_clk_on &sdc1_cmd_on &sdc1_data_on>;
+			pinctrl-1 = <&sdc1_clk_off &sdc1_cmd_off &sdc1_data_off>;
+			status = "okay";
+		};
+
+		sdhci@07864000 {
+			vmmc-supply = <&pm8916_l11>;
+			vqmmc-supply = <&pm8916_l12>;
+
+			pinctrl-names = "default", "sleep";
+			pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
+			pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
+
+			cd-gpios = <&msmgpio 38 GPIO_ACTIVE_LOW>;
+			status = "okay";
+		};
+
+		usb@78d9000 {
+			extcon = <&usb_id>, <&usb_id>;
+			status = "okay";
+			adp-disable;
+			hnp-disable;
+			srp-disable;
+			dr_mode = "otg";
+			pinctrl-names = "default", "device";
+			pinctrl-0 = <&usb_sw_sel_pm &usb_hub_reset_pm>;
+			pinctrl-1 = <&usb_sw_sel_pm_device &usb_hub_reset_pm_device>;
+			ulpi {
+				phy {
+					v1p8-supply = <&pm8916_l7>;
+					v3p3-supply = <&pm8916_l13>;
+					extcon = <&usb_id>;
+				};
+			};
+		};
+
+		lpass@07708000 {
+			status = "okay";
+		};
+
+		mdss@1a00000 {
+			status = "okay";
+
+			mdp@1a01000 {
+				status = "okay";
+			};
+
+			mdss_dsi0:dsi@1a98000 {
+				status = "okay";
+
+				vdda-supply = <&pm8916_l2>;
+				vddio-supply = <&pm8916_l6>;
+			};
+
+			dsi-phy@1a98300 {
+				status = "okay";
+
+				vddio-supply = <&pm8916_l6>;
+			};
+		};
+
+		lpass_codec: codec{
+			status = "okay";
+		};
+
+		/*
+		Internal Codec
+			playback - Primary MI2S
+			capture - Ter MI2S
+
+		External Primary:
+			playback - secondary MI2S
+			capture - Quat MI2S
+
+		External Secondary:
+			playback - Quat MI2S
+			capture - Quat MI2S
+
+		*/
+
+		sound: sound {
+			compatible = "qcom,apq8016-sbc-sndcard";
+			reg = <0x07702000 0x4>, <0x07702004 0x4>;
+			reg-names = "mic-iomux", "spkr-iomux";
+
+			status = "okay";
+			pinctrl-0 = <&cdc_pdm_lines_act &ext_sec_tlmm_lines_act &ext_mclk_tlmm_lines_act>;
+			pinctrl-1 = <&cdc_pdm_lines_sus &ext_sec_tlmm_lines_sus &ext_mclk_tlmm_lines_sus>;
+			pinctrl-names = "default", "sleep";
+			qcom,model = "DB410c";
+			qcom,audio-routing =
+				"AMIC2", "MIC BIAS Internal2",
+				"AMIC3", "MIC BIAS External1";
+
+			internal-codec-playback-dai-link@0 { /* I2S - Internal codec */
+				link-name = "WCD";
+				cpu { /* PRIMARY */
+					sound-dai = <&lpass MI2S_PRIMARY>;
+				};
+				codec {
+					sound-dai = <&lpass_codec 0>, <&wcd_codec 0>;
+				};
+			};
+
+			internal-codec-capture-dai-link@0 { /* I2S - Internal codec */
+				link-name = "WCD-Capture";
+				cpu { /* PRIMARY */
+					sound-dai = <&lpass MI2S_TERTIARY>;
+				};
+				codec {
+					sound-dai = <&lpass_codec 1>, <&wcd_codec 1>;
+				};
+			};
+		};
+
+		spmi@200f000 {
+			pm8916@1 {
+				pwm@bc00 {
+					status = "ok";
+
+					pinctrl-names = "default";
+					pinctrl-0 = <&ls_exp_gpio_f>;
+				};
+			};
+		};
+
+		wcnss@a21b000 {
+			status = "okay";
+		};
+
+		camera_vdddo_1v8: fixedregulator@0 {
+			compatible = "regulator-fixed";
+			regulator-name = "camera_vdddo";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-always-on;
+		};
+
+		camera_vdda_2v8: fixedregulator@1 {
+			compatible = "regulator-fixed";
+			regulator-name = "camera_vdda";
+			regulator-min-microvolt = <2800000>;
+			regulator-max-microvolt = <2800000>;
+			regulator-always-on;
+		};
+
+		camera_vddd_1v5: fixedregulator@2 {
+			compatible = "regulator-fixed";
+			regulator-name = "camera_vddd";
+			regulator-min-microvolt = <1500000>;
+			regulator-max-microvolt = <1500000>;
+			regulator-always-on;
+		};
+
+		vph_pwr_vreg: vph_pwr_vreg {
+			compatible = "regulator-fixed";
+			regulator-name = "vph_pwr";
+			status = "ok";
+			regulator-always-on;
+		};
+	};
+
+	usb2513 {
+		compatible = "smsc,usb3503";
+		reset-gpios = <&pm8916_gpios 3 GPIO_ACTIVE_LOW>;
+		initial-mode = <1>;
+	};
+
+	usb_id: usb-id {
+		compatible = "linux,extcon-usb-gpio";
+		id-gpio = <&msmgpio 121 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb_id_default>;
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		autorepeat;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&msm_key_volp_n_default>;
+
+		button@0 {
+			label = "Volume Up";
+			linux,code = <KEY_VOLUMEUP>;
+			gpios = <&msmgpio 107 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&camss {
+	status = "disabled";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			csiphy0_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 2>;
+				remote-endpoint = <&ov5645_ep>;
+				status = "disabled";
+			};
+		};
+		port@1 {
+			reg = <1>;
+			csiphy1_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 2>;
+				remote-endpoint = <&ov5645_2_ep>;
+				status = "disabled";
+			};
+		};
+	};
+};
+
+&cci {
+	status = "ok";
+	camera_rear@3b {
+		compatible = "ovti,ov5645";
+		reg = <0x3b>;
+		enable-gpios = <&msmgpio 34 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&msmgpio 35 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&camera_rear_default>;
+		clocks = <&gcc GCC_CAMSS_MCLK0_CLK>;
+		clock-names = "xclk";
+		clock-frequency = <23880000>;
+		vdddo-supply = <&camera_vdddo_1v8>;
+		vdda-supply = <&camera_vdda_2v8>;
+		vddd-supply = <&camera_vddd_1v5>;
+		status = "disabled";
+		port {
+			ov5645_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 2>;
+				remote-endpoint = <&csiphy0_ep>;
+			};
+		};
+	};
+	camera_front@3a {
+		compatible = "ovti,ov5645";
+		reg = <0x3a>;
+
+		enable-gpios = <&msmgpio 33 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&msmgpio 28 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&camera_front_default>;
+
+		clocks = <&gcc GCC_CAMSS_MCLK1_CLK>;
+		clock-names = "xclk";
+		clock-frequency = <23880000>;
+
+		vdddo-supply = <&camera_vdddo_1v8>;
+		vdda-supply = <&camera_vdda_2v8>;
+		vddd-supply = <&camera_vddd_1v5>;
+
+		status = "disabled";
+
+		port {
+			ov5645_2_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 2>;
+				remote-endpoint = <&csiphy1_ep>;
+			};
+		};
+	};
+};
+
+&wcd_codec {
+	status = "okay";
+	clocks = <&gcc GCC_CODEC_DIGCODEC_CLK>;
+	clock-names = "mclk";
+};
+
+&pm8916_0 {
+	pwrkey@800{
+		// Overwrite RESETIN_N keyboard scan code
+		linux,code = <KEY_VOLUMEDOWN>;
+	};
+
+	rtc@6000 {
+		status = "disabled";
+	};
+};
+
+&smd_rpm_regulators {
+	vdd_l1_l2_l3-supply = <&pm8916_s3>;
+	vdd_l5-supply = <&pm8916_s3>;
+	vdd_l4_l5_l6-supply = <&pm8916_s4>;
+	vdd_l7-supply = <&pm8916_s4>;
+
+	s1 {
+		regulator-min-microvolt = <375000>;
+		regulator-max-microvolt = <1562000>;
+	};
+
+	s3 {
+		regulator-min-microvolt = <375000>;
+		regulator-max-microvolt = <1562000>;
+	};
+
+	s4 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	l1 {
+		regulator-min-microvolt = <375000>;
+		regulator-max-microvolt = <1525000>;
+	};
+
+	l2 {
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+	};
+
+	l3 {
+		regulator-min-microvolt = <375000>;
+		regulator-max-microvolt = <1525000>;
+	};
+
+	l4 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l5 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l6 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+
+	l7 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l8 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l9 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l10 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l11 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+		regulator-allow-set-load;
+		regulator-system-load = <400000>; //400mA
+	};
+
+	l12 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l13 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l14 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+
+	l15 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+		regulator-always-on;
+	};
+
+	l16 {
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+	};
+
+	l17 {
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	l18 {
+		regulator-min-microvolt = <1750000>;
+		regulator-max-microvolt = <3337000>;
+	};
+};
