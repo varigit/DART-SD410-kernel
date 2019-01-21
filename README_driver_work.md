@@ -25,7 +25,6 @@ sudo apt-get -y install build-essential libc6:i386 libncurses5:i386 libstdc++6:i
 ```bash
 cd ~/Downloads \
 && wget -m --user=dart-sd410 --password=varSD410 ftp://ftp.variscite.com \
-&& mkdir ~/dart-sd410 \
 && mv ~/Downloads/ftp.variscite.com ~/dart-sd410
 ```
 
