@@ -234,8 +234,8 @@ enum t100_type {
 #define dev_info dev_err
 #undef dev_warn
 #define dev_warn dev_err
-#undef dev_dbg
-#define dev_dbg dev_err
+//#undef dev_dbg
+//#define dev_dbg dev_err
 
 struct mxt_info {
 	u8 family_id;
