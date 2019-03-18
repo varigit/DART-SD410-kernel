@@ -117,7 +117,8 @@
 			compatible = "atmel,maxtouch";
 			reg = <0x4a>;
 			interrupt-parent = <&msm_gpio>;
-			interrupts = <97 IRQ_TYPE_LEVEL_LOW>;
+			interrupts = <13 IRQ_TYPE_LEVEL_LOW>;
+			atmel,reset-gpio = <&msm_gpio 12 0x00>;
 		};
 	};
 
