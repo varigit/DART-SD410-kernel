@@ -77,6 +77,7 @@
 
 	i2c@78ba000 { /* BLSP1 QUP6 */
 		status = "ok";
+
 		focaltech@38{
 			compatible = "focaltech,5x06";
 			reg = <0x38>;
@@ -111,6 +112,7 @@
 			focaltech,fw-auto-cal;
 			focaltech,mirror_h;
 			focaltech,mirror_v;
+			status = "disabled";
 		};
 
 		atmel_maxtouch_ts@4a {
