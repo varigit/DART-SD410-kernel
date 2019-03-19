@@ -294,6 +294,7 @@
 			};
 		};
 
+		// spi0 spi_0 is BLSP1 QUP3 (also called BLSP3)
 		spi0_active {
 			/* MOSI, MISO, CLK */
 			qcom,pins = <&gp 8>, <&gp 9>, <&gp 11>;
@@ -1358,6 +1359,24 @@
 			cam_sensor_flash_sleep: sleep {
 				drive-strength = <2>; /* 2 MA */
 				bias-pull-down = <0>; /* PULL DOWN */
+			};
+		};
+
+		pmx_i2c_3 {
+			/* CLK, DATA */
+			qcom,pins = <&gp 10>, <&gp 11>;
+			qcom,num-grp-pins = <2>;
+			qcom,pin-func = <2>;
+			label = "pmx_i2c_3";
+			/* active state */
+			i2c_3_active: i2c_3_active {
+				drive-strength = <2>; /* 2 MA */
+				bias-disable; /* No PULL */
+			};
+			/*suspended state */
+			i2c_3_sleep: i2c_3_sleep {
+				drive-strength = <2>; /* 2 MA */
+				bias-disable; /* No PULL */
 			};
 		};
 

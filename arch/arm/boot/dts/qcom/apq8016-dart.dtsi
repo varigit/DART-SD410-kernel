@@ -23,6 +23,9 @@
 	i2c@78b6000 { /* BLSP1 QUP2 */
 	};
 
+	i2c@78b7000 { /* BLSP1 QUP3 */
+	};
+
 	i2c@78b8000 { /* BLSP1 QUP4 */
  	};
 

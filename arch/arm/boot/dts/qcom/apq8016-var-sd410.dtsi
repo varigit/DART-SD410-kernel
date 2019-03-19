@@ -27,6 +27,10 @@
 	        status = "ok";
 	};
 
+	i2c@78b7000 { /* BLSP1 QUP3 */
+	        status = "ok";
+	};
+
 	i2c@78b8000 { /* BLSP1 QUP4 */
         status = "ok";
 		/* DSI_TO_LVDS I2C configuration */
