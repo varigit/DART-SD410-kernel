@@ -49,6 +49,7 @@
 									0x30 0x00 0x00 0x00 0x03 0x00 0x00 0x00 
 									0x28 0x00 0x00 0x00 0x00 0x00 0x00 0x00 
 									0x00 0x00 0x00 0x01>;
+			status = "disabled";
 		};
 		
 		/* DSI_TO_HDMI I2C configuration */
@@ -66,6 +67,7 @@
 			adv7533,hpd-irq-gpio = <&msm_gpio 20 0x2003>;
 			clocks = <&clock_rpm clk_bb_clk2>;
 			clock-names = "ref_clk";
+			status = "disabled";
 		};
 		
 		/* DS1307 RTC module */
