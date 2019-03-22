@@ -29,6 +29,12 @@
 
 	i2c@78b7000 { /* BLSP1 QUP3 */
 	        status = "ok";
+
+		sbs-battery@b {
+			// should look into "sbs,sbs-battery" compatibility
+			compatible = "ie,nd2054", "smbus-battery";
+			reg = <0xb>;
+		};
 	};
 
 	i2c@78b8000 { /* BLSP1 QUP4 */
