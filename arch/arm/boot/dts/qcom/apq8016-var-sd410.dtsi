@@ -32,7 +32,7 @@
 
 		sbs-battery@b {
 			// should look into "sbs,sbs-battery" compatibility
-			compatible = "ie,nd2054", "smbus-battery";
+			compatible = "smbus-battery";
 			reg = <0xb>;
 		};
 	};
