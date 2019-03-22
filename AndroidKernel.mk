@@ -50,6 +50,7 @@ endif
 KERNEL_OUT := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
 KERNEL_CONFIG := $(KERNEL_OUT)/.config
 
+$(info KERNEL_DEFCONFIG: $(KERNEL_DEFCONFIG))
 ifeq ($(KERNEL_DEFCONFIG)$(wildcard $(KERNEL_CONFIG)),)
 $(error Kernel configuration not defined, cannot build kernel)
 else
