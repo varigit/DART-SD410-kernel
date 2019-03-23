@@ -1,0 +1,6 @@
+#ifndef _LINUX_MFD_SCIAPS_MICRO_H_
+#define _LINUX_MFD_SCIAPS_MICRO_H_
+
+
+
+#endif // _LINUX_MFD_SCIAPS_MICRO_H_

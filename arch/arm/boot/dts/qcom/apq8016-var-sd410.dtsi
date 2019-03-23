@@ -32,8 +32,13 @@
 
 		sbs-battery@b {
 			// should look into "sbs,sbs-battery" compatibility
-			compatible = "ie,nd2054", "smbus-battery";
+			compatible = "smbus-battery";
 			reg = <0xb>;
+		};
+
+		sciaps_micro@59 {
+			compatible = "sciaps_micro";
+			reg = <0x59>;
 		};
 	};
 

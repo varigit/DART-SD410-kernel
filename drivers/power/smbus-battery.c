@@ -21,6 +21,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/delay.h>
 #include <linux/err.h>
 #include <linux/power_supply.h>
 #include <linux/i2c.h>
@@ -303,7 +304,9 @@ static void smbus_delayed_work(struct work_struct *work)
 	CHECK_READ_WORD(SMBUS_BATTERY_REG_STATUS, cache.status, 0, 65535)
 	cache.present = ret >= 0;
 	if (cache.present) {
+		usleep_range(100, 10000);
 		CHECK_READ_WORD(SMBUS_BATTERY_REG_RSOC, cache.capacity, 0, 100)
+		usleep_range(100, 10000);
 		CHECK_READ_WORD(SMBUS_BATTERY_REG_TEMP, cache.temperature, 0, 65535)
 		i2c_read_errs = 0;
 	}
