@@ -35,6 +35,11 @@
 			compatible = "smbus-battery";
 			reg = <0xb>;
 		};
+
+		sciaps_micro@59 {
+			compatible = "sciaps_micro";
+			reg = <0x59>;
+		};
 	};
 
 	i2c@78b8000 { /* BLSP1 QUP4 */
