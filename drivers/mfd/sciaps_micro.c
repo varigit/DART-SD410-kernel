@@ -10,6 +10,8 @@
 #include <linux/i2c.h>
 #include <linux/types.h>
 
+#include <linux/qpnp/power-on.h>
+
 #include <linux/mfd/sciaps_micro.h>
 
 
@@ -32,6 +34,8 @@ static sciaps_micro_cmds sciaps_micro_known_cmds[] = {
 };
 
 static const int libs_cmd_num = sizeof(sciaps_micro_known_cmds)/sizeof(sciaps_micro_cmds);
+
+static void *prior_pm_power_off = NULL;
 
 #if 0
 static int sciaps_micro_i2c_read(struct i2c_client *client, int count,
@@ -225,6 +229,9 @@ static int sciaps_micro_delete_sysfs(struct i2c_client *client)
 	return 0;
 }
 
+static struct i2c_client *sciaps_micro_i2c_client;
+static void sciaps_micro_poweroff(void);
+
 static int sciaps_micro_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
@@ -247,6 +254,11 @@ static int sciaps_micro_probe(struct i2c_client *client,
 	}
 
 	i2c_set_clientdata(client, sciaps_micro);
+
+	sciaps_micro_i2c_client = client;
+	prior_pm_power_off = pm_power_off;
+	pm_power_off = sciaps_micro_poweroff;
+
 	sciaps_micro_setup_sysfs(client);
 	device_create_file(&client->dev, &dev_attr_read_reg);
 
@@ -260,6 +272,10 @@ static int sciaps_micro_remove(struct i2c_client *client)
 
 	sciaps_micro = i2c_get_clientdata(client);
 
+	if (pm_power_off == sciaps_micro_poweroff) {
+		pm_power_off = prior_pm_power_off;
+	}
+
 	sciaps_micro_delete_sysfs(client);
 	i2c_unregister_device(client);
 
@@ -270,12 +286,36 @@ static int sciaps_micro_remove(struct i2c_client *client)
 
 static void sciaps_micro_shutdown(struct i2c_client *client)
 {
+	dev_dbg(&client->dev, "%s:%d\n", __func__, __LINE__);
+
+	// Make sure our poweroff function is the one used
+	pr_notice("Shutting down...\n");
+	if (pm_power_off != sciaps_micro_poweroff) {
+		prior_pm_power_off = pm_power_off;
+		pm_power_off = sciaps_micro_poweroff;
+	}
+}
+
+static void sciaps_micro_poweroff(void)
+{
+	struct sciaps_micro_data *sciaps_data;
 	int err;
 
-	err = sciaps_micro_i2c_write(client, sciaps_micro_known_cmds[0].buf, 3);
-  if (err < 0) {
-		dev_err(&client->dev, "%s: could not shutdown PIC\n", __func__);
+	pr_notice("Powering off the SoM\n");
+
+	sciaps_data = dev_get_drvdata(&sciaps_micro_i2c_client->dev);
+	dev_dbg(&sciaps_data->client->dev, "%s:%d\n", __func__, __LINE__);
+
+	err = sciaps_micro_i2c_write(sciaps_data->client, sciaps_micro_known_cmds[0].buf, 3);
+	if (err < 0) {
+		dev_err(&sciaps_data->client->dev, "%s: could not send poweroff command to PIC\n", __func__);
 	}
+
+	qpnp_pon_system_pwr_off(PON_POWER_OFF_SHUTDOWN);
+
+	msleep(10000);
+	pr_err("Powering off has failed\n");
+	return;
 }
 
 static struct i2c_device_id sciaps_micro_idtable[] = {
