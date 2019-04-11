@@ -260,7 +260,6 @@ static int sciaps_micro_probe(struct i2c_client *client,
 	pm_power_off = sciaps_micro_poweroff;
 
 	sciaps_micro_setup_sysfs(client);
-	device_create_file(&client->dev, &dev_attr_read_reg);
 
 	dev_info(&client->dev, "device probed\n");
 
