@@ -1,0 +1,22 @@
+/*
+ * Copyright 2019 SciAps
+ *
+ *
+ *
+ *
+ *
+ */
+
+#ifndef __SCIAPS_DRIVER_H__
+#define __SCIAPS_DRIVER_H__
+
+#define SCIAPS_DRIVER_ID_TI_DAC7513_SPI		10
+#define SCIAPS_DRIVER_ID_LT_LTC1658_SPI		11
+#define SCIAPS_DRIVER_ID_TI_ADS7841_SPI		12
+#define SCIAPS_DRIVER_ID_TI_TPL0501_SPI		13
+#define SCIAPS_DRIVER_ID_SCIAPS_CNTLR_I2C	14
+
+#define SCIAPS_SPI_SPEED_HZ_Default			1000000
+
+#endif //__SCIAPS_DRIVER_H__
+

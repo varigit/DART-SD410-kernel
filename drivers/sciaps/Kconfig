@@ -1,0 +1,25 @@
+#
+# SciAps Device Drivers
+#
+
+menuconfig SCIAPS_DRIVERS
+	bool "SciAps drivers"
+	depends on HAS_IOMEM
+	help
+		SciAps drivers
+
+if SCIAPS_DRIVERS
+config CONFIG_SCIAPS_TI_ADS7841_SPI
+	tristate "SciAps TI ADS7841 Driver"
+	depends on SCIAPS_DRIVERS && SPI_MASTER
+	default n
+	help
+	  TI ADS7841 Support 
+
+config CONFIG_SCIAPS_TI_DAC7513_SPI
+	tristate "SciAps TI DAC7513 Driver"
+	depends on SCIAPS_DRIVERS && SPI_MASTER
+	default n
+	help
+	  TI DAC7513 Support 
+endif #SCIAPS_DRIVERS
