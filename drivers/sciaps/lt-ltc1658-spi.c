@@ -101,10 +101,12 @@ static int ltc1658_spi_cmd_dac_data_set(struct spi_device *spi, bool lock_it) {
 			memset(&xfer,0x00,sizeof (xfer));
 			ltc1658_tx_buffer[offset++] = (uint8_t)(value>>8);
 			ltc1658_tx_buffer[offset++] = (uint8_t)(value);
-			xfer.tx_buf = ltc1658_tx_buffer;
-			xfer.rx_buf = NULL;
-			xfer.speed_hz = SCIAPS_LT_LTC1658_SPI_SPEED_HZ;
-			xfer.len	= offset;
+			
+			xfer.tx_buf		= ltc1658_tx_buffer;
+			xfer.rx_buf		= NULL;
+			xfer.speed_hz	= SCIAPS_LT_LTC1658_SPI_SPEED_HZ;
+			xfer.len		= offset;
+			xfer.cs_change	= 1;
 
 			spi_message_init(&msg);
 			spi_message_add_tail(&xfer, &msg);
