@@ -51,14 +51,13 @@
 		qcom,gpio-miso = <&msm_gpio 9 0>;
 		qcom,gpio-clk  = <&msm_gpio 11 0>;
 		qcom,gpio-cs0  = <&msm_gpio 10 0>;
-		//qcom,gpio-cs1  = <&msm_gpio 120 0>;
-		qcom,gpio-cs1  = <&msm_gpio 36 0>;
+		qcom,gpio-cs1  = <&msm_gpio 120 0>;
 		qcom,gpio-cs2  = <&msm_gpio 37 0>;
 		qcom,gpio-cs3  = <&msm_gpio 69 0>;
-		cs-gpios = <&msm_gpio 10 0>, <&msm_gpio 36 0>, <&msm_gpio 37 0>, <&msm_gpio 69 0>;
+		cs-gpios = <&msm_gpio 10 0>, <&msm_gpio 120 0>, <&msm_gpio 37 0>, <&msm_gpio 69 0>;
                 pinctrl-names = "spi_default", "spi_sleep";
-				pinctrl-0 = <&ad_spi0_default &ad_spi0_cs0_active &ad_spi0_cs1_active &ad_spi0_cs2_active &ad_spi0_cs3_active>;
-				pinctrl-1 = <&ad_spi0_sleep &ad_spi0_cs0_sleep &ad_spi0_cs1_sleep  &ad_spi0_cs2_sleep &ad_spi0_cs3_sleep>;
+				pinctrl-0 = <&spi0_default &spi0_cs0_active &spi0_cs1_active &spi0_cs2_active &spi0_cs3_active>;
+				pinctrl-1 = <&spi0_sleep &spi0_cs0_sleep &spi0_cs1_sleep  &spi0_cs2_sleep &spi0_cs3_sleep>;
 
                 //pinctrl-0 = <&sciaps_spi0_spi_default &sciaps_spi0_cs2_default &sciaps_spi0_cs_all_other_default>;
 				//pinctrl-1 = <&sciaps_spi0_spi_sleep  &sciaps_spi0_cs2_sleep   &sciaps_spi0_cs_all_other_sleep>;
@@ -381,9 +380,24 @@
 			output-low;
 		};
 	};
+	cross-conn-det {
+		qcom,pins = <&gp 21>;
+		qcom,num-grp-pins = <1>;
+		qcom,pin-func = <0>;
+		label = "cross-conn-det-sw";
+		cross_conn_det_act: lines_on {
+			drive-strength = <8>;
+			output-low;
+			bias-pull-down;
+		};
+		cross_conn_det_sus: lines_off {
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
 
 	gpio_led_pins {
-		qcom,pins = <&gp 21>, <&gp 120>;
+		qcom,pins = <&gp 20>, <&gp 96>;
 		qcom,num-grp-pins = <2>;
 		label = "gpio-led-pins";
 		gpio_led_off: led_off {
@@ -600,37 +614,27 @@
 		status = "disabled";
 	};
 	dac7513@0 {
-		pinctrl-names = "spi_default", "spi_sleep";
-		pinctrl-0 = <&ad_spi0_default &ad_spi0_cs0_active &ad_spi0_cs1_active &ad_spi0_cs2_active &ad_spi0_cs3_active>;
-		pinctrl-1 = <&ad_spi0_sleep &ad_spi0_cs0_sleep &ad_spi0_cs1_sleep  &ad_spi0_cs2_sleep &ad_spi0_cs3_sleep>;
+		spi-cpol = <1>;
+		spi-cpha = <0>;
 		status = "ok";
 	};
 	ltc1658@1 {
-		pinctrl-names = "spi_default", "spi_sleep";
-		pinctrl-0 = <&ad_spi0_default &ad_spi0_cs0_active &ad_spi0_cs1_active &ad_spi0_cs2_active &ad_spi0_cs3_active>;
-		pinctrl-1 = <&ad_spi0_sleep &ad_spi0_cs0_sleep &ad_spi0_cs1_sleep  &ad_spi0_cs2_sleep &ad_spi0_cs3_sleep>;
+		spi-cpol = <0>;
+		spi-cpha = <0>;
 		status = "ok";
 	};
 	ads7841@2 {
-		pinctrl-names = "spi_default", "spi_sleep";
-		pinctrl-0 = <&ad_spi0_default &ad_spi0_cs0_active &ad_spi0_cs1_active &ad_spi0_cs2_active &ad_spi0_cs3_active>;
-		pinctrl-1 = <&ad_spi0_sleep &ad_spi0_cs0_sleep &ad_spi0_cs1_sleep  &ad_spi0_cs2_sleep &ad_spi0_cs3_sleep>;
+		spi-cpol = <0>;
+		spi-cpha = <0>;
 		status = "ok";
 	};
 	tpl0501@3 {
-		pinctrl-names = "spi_default", "spi_sleep";
-		pinctrl-0 = <&ad_spi0_default &ad_spi0_cs0_active &ad_spi0_cs1_active &ad_spi0_cs2_active &ad_spi0_cs3_active>;
-		pinctrl-1 = <&ad_spi0_sleep &ad_spi0_cs0_sleep &ad_spi0_cs1_sleep  &ad_spi0_cs2_sleep &ad_spi0_cs3_sleep>;
+		spi-cpol = <1>;
+		spi-cpha = <1>;
 		status = "ok";
 	};
 
 /*
-	df1@0 {
-		status = "disabled";
-	};
-	df3@2 {
-		status = "disabled";
-	};
 	spidev@0 {
 		compatible = "spidev";
 		spi-max-frequency = <50000000>;
