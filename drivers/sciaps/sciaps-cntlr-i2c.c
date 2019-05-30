@@ -50,6 +50,7 @@ enum sciaps_cntlr_register_index_t {
 		SCIAPS_CNTLR_REG_SerialLW_Index,
 		SCIAPS_CNTLR_REG_SerialHW_Index,
 		SCIAPS_CNTLR_REG_PowerControl_Index,
+		SCIAPS_CNTLR_REG_Register_Index,
 		SCIAPS_CNTLR_REG_NumberOfRegisters,
 };
 
@@ -65,6 +66,7 @@ static uint8_t sciaps_cntlr_registers[SCIAPS_CNTLR_REG_NumberOfRegisters] = {
 		SCIAPS_CNTLR_REG_SerialLW,
 		SCIAPS_CNTLR_REG_SerialHW,
 		SCIAPS_CNTLR_REG_PowerControl,
+		SCIAPS_CNTLR_REG_Register_Index,
 				};
 
 
@@ -75,6 +77,7 @@ struct sciaps_data_t {
 	union device_data_t {
 		struct sciaps_cntlr_t {
 			uint16_t	_values[SCIAPS_CNTLR_REG_NumberOfRegisters];
+			uint16_t	_reg;
 		} _sciaps_cntlr;
 	} _data;
 };
@@ -336,6 +339,74 @@ static ssize_t cntlr_pcon_show(struct device* child, struct device_attribute* at
 	return cntlr_any_show_impl(child, attr, buf, SCIAPS_CNTLR_REG_PowerControl_Index);
 }
 
+
+static ssize_t cntlr_reg_show(struct device* child, struct device_attribute* attr, char* buf)
+{
+	struct i2c_client* i2c = to_i2c_client(child);
+	struct sciaps_data_t* data = sciaps_cntlr_i2c_check_and_get_data(i2c);
+	uint16_t value;
+
+	if (!data) {
+		return -EINVAL;
+	}
+	
+	mutex_lock(&data->_lock);
+	{
+		value = data->_data._sciaps_cntlr._reg;
+	}
+	mutex_unlock(&data->_lock);
+
+	return scnprintf(buf, PAGE_SIZE, "%.4x\n", value);
+}
+
+static ssize_t cntlr_reg_store(struct device* child, struct device_attribute* attr, const char* buf, size_t count)
+{
+	struct i2c_client* i2c = to_i2c_client(child);
+	struct sciaps_data_t* data = sciaps_cntlr_i2c_check_and_get_data(i2c);
+	uint32_t value;
+	uint16_t reg;
+	uint16_t reg_value;
+	int ret = 0, offset = 0;
+
+
+	if (!data || count < 2) {
+		return -EINVAL;
+	}
+	
+	if ((offset = kstrtou32(buf, 16, &value)) < 0) {
+		return -EINVAL;
+	}	
+	
+	mutex_lock(&data->_lock);
+	{
+		if (value > 0xffff) {
+			reg			= (uint8_t)(value>>16); // Ignore the most significant byte
+			reg_value	= (uint16_t)(value);
+			ret = sciaps_cntlr_i2c_write_reg(i2c, reg, reg_value, false);
+			if (ret >= 0) {
+				data->_data._sciaps_cntlr._reg = reg_value;
+				ret = sciaps_cntlr_i2c_read_reg(i2c, reg, &reg_value, false);
+				if (ret >= 0) {
+					data->_data._sciaps_cntlr._reg = reg_value;
+				}
+			}
+		}
+		else {
+			reg = (uint8_t)(value);
+			ret = sciaps_cntlr_i2c_read_reg(i2c, reg, &reg_value, false);
+			if (ret >= 0) {
+				data->_data._sciaps_cntlr._reg = reg_value;
+			}
+		}
+	}
+	mutex_unlock(&data->_lock);
+
+	if (ret < 0)
+		return ret;
+
+	return count;
+}
+
 static DEVICE_ATTR(sc_proto,			0444,	cntlr_protocol_show,			NULL);  
 static DEVICE_ATTR(sc_code_lw,			0444,	cntlr_fw_code_lw_show,			NULL);  
 static DEVICE_ATTR(sc_code_hw,			0444,	cntlr_fw_code_hw_show,			NULL);  
@@ -347,6 +418,7 @@ static DEVICE_ATTR(sc_temp_cal_const,	0666,	cntlr_temp_cal_const_show,		cntlr_te
 static DEVICE_ATTR(sc_serial_lw,		0666,	cntlr_serial_lw_show,			cntlr_serial_lw_store);  
 static DEVICE_ATTR(sc_serial_hw,		0666,	cntlr_serial_hw_show,			cntlr_serial_hw_store);  
 static DEVICE_ATTR(sc_pcon,				0444,	cntlr_pcon_show,				NULL);  
+static DEVICE_ATTR(sc_reg,				0666,	cntlr_reg_show,					cntlr_reg_store);  
 
 static struct device_attribute* sciaps_cntlr_dev_attrs[SCIAPS_CNTLR_REG_NumberOfRegisters] = {
 									&dev_attr_sc_proto,         
@@ -359,7 +431,8 @@ static struct device_attribute* sciaps_cntlr_dev_attrs[SCIAPS_CNTLR_REG_NumberOf
 									&dev_attr_sc_temp_cal_const,
 									&dev_attr_sc_serial_lw,     
 									&dev_attr_sc_serial_hw,     
-									&dev_attr_sc_pcon,          
+									&dev_attr_sc_pcon,
+									&dev_attr_sc_reg,
 								};
 
 static void cntlr_remove_files(struct i2c_client *i2c)
@@ -456,6 +529,7 @@ static int sciaps_cntlr_i2c_probe(struct i2c_client *i2c, const struct i2c_devic
 				return ret;
 			}
 			mutex_init(&data->_lock);
+			data->_data._sciaps_cntlr._reg = 0;
 			i2c_set_clientdata(i2c, data);
 			dev_info(&i2c->dev, "sciaps_cntlr_i2c_probe: clientdata set for %s;", i2c->name);
 		       	       
