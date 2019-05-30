@@ -167,13 +167,11 @@ static int ads7841_spi_adc_convert(struct spi_device *spi, uint8_t mask, bool lo
 
 				xfer[0].speed_hz		= SCIAPS_TI_ADS7841_SPI_SPEED_HZ;
 				//xfer[0].delay_usecs	= 2;
-				xfer[0].cs_change		= 0;
 				xfer[0].len				= tx_offset;
 
 				xfer[1].tx_buf		= NULL;
 				xfer[1].rx_buf		= ads7841_rx_buffer;
 				xfer[1].speed_hz	= SCIAPS_TI_ADS7841_SPI_SPEED_HZ;
-				xfer[1].cs_change	= 1;
 				xfer[1].len			= 2;
 
 
