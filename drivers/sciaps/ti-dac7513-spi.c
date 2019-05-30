@@ -119,10 +119,12 @@ static int dac7513_spi_cmd_dac_data_set(struct spi_device *spi, bool lock_it) {
 			memset(&xfer,0x00,sizeof (xfer));
 			dac7513_tx_buffer[offset++] = (uint8_t)(value>>8);
 			dac7513_tx_buffer[offset++] = (uint8_t)(value);
-			xfer.tx_buf = dac7513_tx_buffer;
-			xfer.rx_buf = NULL;
-			xfer.speed_hz = SCIAPS_TI_DAC7513_SPI_SPEED_HZ;
-			xfer.len	= offset;
+
+			xfer.tx_buf		= dac7513_tx_buffer;
+			xfer.rx_buf		= NULL;
+			xfer.speed_hz	= SCIAPS_TI_DAC7513_SPI_SPEED_HZ;
+			xfer.len		= offset;
+			xfer.cs_change	= 1;
 
 			spi_message_init(&msg);
 			spi_message_add_tail(&xfer, &msg);
