@@ -15,6 +15,8 @@
 #include "apq8016-camera-sensor-var-sd410.dtsi"
 #include "dsi-panel-var-sd410.dtsi"
 #include "dsi-panel-COM43H4N10ULC.dtsi"
+#include "apq8016-sciaps-ngx-pinctrl.dtsi"
+#include "apq8016-sciaps-ngx.dtsi"
 
 / {
 	aliases {
@@ -495,6 +497,7 @@
 };
 
 &spi_0 {
+	status = "disabled";
 	gpios = <&msm_gpio 19 0>, /* CLK  */
 			<&msm_gpio 17 0>, /* MISO */
 			<&msm_gpio 16 0>; /* MOSI */
