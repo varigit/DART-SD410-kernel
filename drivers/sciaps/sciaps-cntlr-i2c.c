@@ -19,6 +19,8 @@
 #include <linux/of_gpio.h>
 #include <linux/err.h>
 #include <linux/i2c.h>
+#include <linux/qpnp/power-on.h>
+#include <linux/delay.h>
 
 #include "sciaps-driver.h"
 
@@ -37,6 +39,9 @@
 #define SCIAPS_CNTLR_REG_SerialLW			0x87 //R/W/NV
 #define SCIAPS_CNTLR_REG_SerialHW			0x88 //R/W/NV
 #define SCIAPS_CNTLR_REG_PowerControl		0x80 //R/W
+
+#define SCIAPS_CNTLR_REG_ShutdownPowerSupply		0xA0
+#define SCIAPS_CNTLR_REG_ShutdownPowerSupply_Value	0xA77A
 
 enum sciaps_cntlr_register_index_t {
 		SCIAPS_CNTLR_REG_Protocol_Index = 0,
@@ -69,7 +74,6 @@ static uint8_t sciaps_cntlr_registers[SCIAPS_CNTLR_REG_NumberOfRegisters] = {
 		SCIAPS_CNTLR_REG_Register_Index,
 				};
 
-
 struct sciaps_data_t {
 	uint8_t				_device_id;
 	struct mutex		_lock;
@@ -81,6 +85,10 @@ struct sciaps_data_t {
 		} _sciaps_cntlr;
 	} _data;
 };
+
+static void *prior_pm_power_off = NULL;
+static struct i2c_client* sciaps_cntlr_i2c_client = NULL;
+static void sciaps_cntlr_pm_power_off(void);
 
 static const struct i2c_device_id sciaps_cntlr_i2c_device_id_table[] = {
 	{ .name = "sciaps_pic_cntlr",	.driver_data = (kernel_ulong_t)SCIAPS_DRIVER_ID_SCIAPS_CNTLR_I2C,	}, 
@@ -475,6 +483,8 @@ static int sciaps_cntlr_i2c_probe(struct i2c_client *i2c, const struct i2c_devic
 	int ret = 0;
 	struct sciaps_data_t* data;
 
+	sciaps_cntlr_i2c_client = NULL;
+
 	if (!i2c || !id) {
 		dev_err(&i2c->dev, "sciaps_cntlr_i2c_probe: Invalid params;");
 		return -EINVAL;
@@ -531,8 +541,11 @@ static int sciaps_cntlr_i2c_probe(struct i2c_client *i2c, const struct i2c_devic
 			mutex_init(&data->_lock);
 			data->_data._sciaps_cntlr._reg = 0;
 			i2c_set_clientdata(i2c, data);
+
 			dev_info(&i2c->dev, "sciaps_cntlr_i2c_probe: clientdata set for %s;", i2c->name);
-		       	       
+			prior_pm_power_off = pm_power_off;
+			sciaps_cntlr_i2c_client = i2c;
+			pm_power_off = sciaps_cntlr_pm_power_off;
 		}
 		if (ret < 0) {
 			dev_err(&i2c->dev, "sciaps_cntlr_i2c_probe: i2c_setup failed  for %s with errno: %d;", i2c->name, ret);
@@ -550,6 +563,10 @@ static int sciaps_cntlr_i2c_remove(struct i2c_client *i2c)
 	if (i2c) {
 		struct sciaps_data_t* data = i2c_get_clientdata(i2c);
 
+		if (pm_power_off == sciaps_cntlr_pm_power_off) {
+			pm_power_off = prior_pm_power_off;
+		}
+
 		if (data) {
 			mutex_destroy(&data->_lock);
 			cntlr_remove_files(i2c);
@@ -557,6 +574,54 @@ static int sciaps_cntlr_i2c_remove(struct i2c_client *i2c)
 	}
 	dev_err(&i2c->dev, "sciaps_cntlr_i2c_remove: i2c->name = %s;", i2c->name);
 	return 0;
+}
+static void sciaps_cntlr_i2c_shutdown(struct i2c_client *i2c)
+{
+	dev_dbg(&i2c->dev, "%s:%d\n", __func__, __LINE__);
+
+	// Make sure our poweroff function is the one used
+	if (pm_power_off != sciaps_cntlr_pm_power_off) {
+		prior_pm_power_off = pm_power_off;
+		pm_power_off = sciaps_cntlr_pm_power_off;
+	}
+}
+static void sciaps_cntlr_pm_power_off(void)
+{
+	struct sciaps_data_t *data;
+	int ret = -1, count = 10;
+
+	if (!sciaps_cntlr_i2c_client) {
+		pr_err("%s: ---> NULL sciaps_cntlr_i2c_client!\n", __func__);
+		return;
+	}
+
+	data = i2c_get_clientdata(sciaps_cntlr_i2c_client);
+
+	if (!data) {
+		pr_err("%s: ---> data!\n", __func__);
+		return;
+	}
+
+	pr_notice("%s: ---> Powering off the SOM\n", __func__);
+
+	while (count-- > 0 && ret < 0) {
+		pr_notice("%s: ---> Sending 'Power Down' command to SciAps Controller\n", __func__);
+		ret = sciaps_cntlr_i2c_write_reg(data->_i2c, SCIAPS_CNTLR_REG_ShutdownPowerSupply, SCIAPS_CNTLR_REG_ShutdownPowerSupply_Value, false);
+		if (ret < 0) {
+			pr_err("%s: ---> 'Power Down' command send failed\n", __func__);
+			dev_err(&data->_i2c->dev, "%s: Shutdown Power Supply command failed: %d\n", __func__, ret);
+		}
+		else {
+			pr_notice("%s: ---> 'Power Down' command send ALL Good\n", __func__);
+		}
+	}
+
+	pr_notice("%s: ---> qpnp_pon_system_pwr_off(PON_POWER_OFF_SHUTDOWN)\n", __func__);
+	qpnp_pon_system_pwr_off(PON_POWER_OFF_SHUTDOWN);
+
+	msleep(10000);
+	pr_err("%s: ---> Powering off has failed\n", __func__);
+
 }
 
 static struct i2c_driver sciaps_cntlr_i2c_driver = {
@@ -568,6 +633,7 @@ static struct i2c_driver sciaps_cntlr_i2c_driver = {
 	},
 	.probe = sciaps_cntlr_i2c_probe,
 	.remove = sciaps_cntlr_i2c_remove,
+	.shutdown = sciaps_cntlr_i2c_shutdown,
 };
 
 static int __init sciaps_cntlr_i2c_init(void)
