@@ -1,0 +1,63 @@
+&mdss_mdp {
+    dsi_sciaps_com27h2p: qcom,mdss_dsi_sciaps_com27h2p {
+            qcom,mdss-dsi-panel-name = "ortustech com27h2p video mode panel v1.0";
+            qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
+            qcom,mdss-dsi-panel-type = "dsi_video_mode";
+            qcom,mdss-dsi-panel-destination = "display_1";
+            qcom,mdss-dsi-panel-framerate = <60>;
+            qcom,mdss-dsi-virtual-channel-id = <0>;
+            qcom,mdss-dsi-stream = <0>;
+            qcom,mdss-dsi-panel-width = <240>;
+            qcom,mdss-dsi-panel-height = <320>;
+            qcom,mdss-dsi-h-front-porch = <17>;
+            qcom,mdss-dsi-h-back-porch = <20>;
+            qcom,mdss-dsi-h-pulse-width = <10>;
+            qcom,mdss-dsi-h-sync-skew = <0>;
+            qcom,mdss-dsi-v-back-porch = <10>;
+            qcom,mdss-dsi-v-front-porch = <10>;
+            qcom,mdss-dsi-v-pulse-width = <5>;
+            qcom,mdss-dsi-h-left-border = <0>;
+            qcom,mdss-dsi-h-right-border = <0>;
+            qcom,mdss-dsi-v-top-border = <0>;
+            qcom,mdss-dsi-v-bottom-border = <0>;
+            //qcom,mdss-dsi-bpp = <18>;
+            //qcom,mdss-dsi-pixel-packing = <1>;
+			qcom,mdss-dsi-bpp = <24>;
+			qcom,mdss-dsi-color-order = "rgb_swap_bgr";
+            qcom,mdss-dsi-underflow-color = <0xff>;
+            qcom,mdss-dsi-border-color = <0>;
+            qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+            qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+            qcom,mdss-dsi-h-sync-pulse = <1>;
+            qcom,mdss-dsi-traffic-mode = "non_burst_sync_pulse";
+            qcom,mdss-dsi-bllp-eof-power-mode;
+            qcom,mdss-dsi-bllp-power-mode;
+            qcom,mdss-dsi-lane-0-state;
+            qcom,mdss-dsi-lane-1-state;
+            qcom,mdss-dsi-panel-timings = [2B 08 02 00 1E 22 06 0A 03 03 04 00];
+            qcom,mdss-dsi-t-clk-post = <7>;
+            qcom,mdss-dsi-t-clk-pre = <13>;
+            qcom,mdss-dsi-dma-trigger = "trigger_sw";
+            qcom,mdss-dsi-mdp-trigger = "none";
+            qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+            qcom,mdss-dsi-bl-pmic-pwm-frequency = <7575>;
+            qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+            qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 4 0>;
+            qcom,mdss-dsi-reset-sequence = <1 10>;//selects DSI routing to DSI to LVDS bridge
+            qcom,mdss-pan-physical-width-dimension = <43>;
+            qcom,mdss-pan-physical-height-dimension = <56>;
+			qcom,mdss-dsi-on-command = [29 01 00 00 00 00 02 b0 03
+				05 01 00 00 0a 00 01 00
+				15 01 00 00 0a 00 02 3a 77
+                15 01 00 00 00 00 02 36 00
+				39 01 00 00 0a 00 05 2a 00 00 04 ff
+				39 01 00 00 0a 00 05 2b 00 00 05 9f
+				05 01 00 00 78 00 01 11
+				05 01 00 00 10 00 01 29];
+            qcom,mdss-dsi-off-command = [
+                05 01 00 00 32 00 02 28 00
+                05 01 00 00 78 00 02 10 00
+            ];
+    };
+
+};

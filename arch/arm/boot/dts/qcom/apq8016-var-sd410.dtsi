@@ -15,8 +15,9 @@
 #include "apq8016-camera-sensor-var-sd410.dtsi"
 #include "dsi-panel-var-sd410.dtsi"
 #include "dsi-panel-COM43H4N10ULC.dtsi"
-#include "apq8016-sciaps-ngx-pinctrl.dtsi"
-#include "apq8016-sciaps-ngx.dtsi"
+#include "dsi-panel-COM27H2P37ULC.dtsi"
+//#include "apq8016-sciaps-ngx-pinctrl.dtsi"
+//#include "apq8016-sciaps-ngx.dtsi"
 
 / {
 	aliases {
@@ -88,6 +89,26 @@
 			compatible = "dallas,ds1307";
 			reg = <0x68>;
 		};
+
+		nose_cam_leds@0x62 {
+			compatible = "nxp,pca9633";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x62>;
+			//nxp,totem-pole;
+			//nxp,change-on-ack;
+			led0@0 {
+				label = "0-nose-cam-led";
+				reg = <0>;
+				linux,default-trigger = "none";
+			};
+			led0@1 {
+				label = "1-nose-cam-led";
+				reg = <1>;
+				linux,default-trigger = "none";
+			};
+		};
+
  	};
 
 	i2c@78b9000 { /* BLSP1 QUP5 */
@@ -140,6 +161,22 @@
 			interrupt-parent = <&msm_gpio>;
 			interrupts = <13 IRQ_TYPE_LEVEL_LOW>;
 			atmel,reset-gpio = <&msm_gpio 12 0x00>;
+			status = "disabled";
+		};
+		
+		ilitek@26 {
+			compatible = "tchip,ilitek";
+			reg = <0x26>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0x0>;
+			//vdd-supply = <&pm8916_l17>;
+			//vcc_i2c-supply = <&pm8916_l6>;
+			touch,irq-gpio = <&msm_gpio 13 0x0>;
+			touch,reset-gpio = <&msm_gpio 12 0x0>;
+			//ilitek,vbus = "vcc_i2c";
+			//ilitek,vdd = "vdd";
+			ilitek,name = "ilitek_i2c";
+			status = "ok";
 		};
 	};
 
@@ -219,7 +256,8 @@
 };
 
 &mdss_dsi0 {
-	qcom,dsi-pref-prim-pan = <&dsi_variscite_com43h4n>;
+	//qcom,dsi-pref-prim-pan = <&dsi_variscite_com43h4n>;
+	qcom,dsi-pref-prim-pan = <&dsi_sciaps_com27h2p>;
 	pinctrl-names = "mdss_default", "mdss_sleep";
 	pinctrl-0 = <&mdss_dsi_active &mdss_te_active &mdss_dsiext_active>;
 	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend &mdss_dsiext_suspend>;
