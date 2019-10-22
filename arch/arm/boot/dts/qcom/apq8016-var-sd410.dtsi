@@ -15,6 +15,8 @@
 #include "apq8016-camera-sensor-var-sd410.dtsi"
 #include "dsi-panel-var-sd410.dtsi"
 #include "dsi-panel-COM43H4N10ULC.dtsi"
+#include "apq8016-sciaps-ngx-pinctrl.dtsi"
+#include "apq8016-sciaps-ngx.dtsi"
 
 / {
 	aliases {
@@ -25,6 +27,16 @@
 &soc {
 	i2c@78b6000 { /* BLSP1 QUP2 */
 	        status = "ok";
+	};
+
+	i2c@78b7000 { /* BLSP1 QUP3 */
+	        status = "ok";
+
+		sbs-battery@b {
+			// should look into "sbs,sbs-battery" compatibility
+			compatible = "smbus-battery";
+			reg = <0xb>;
+		};
 	};
 
 	i2c@78b8000 { /* BLSP1 QUP4 */
@@ -45,6 +57,7 @@
 									0x30 0x00 0x00 0x00 0x03 0x00 0x00 0x00 
 									0x28 0x00 0x00 0x00 0x00 0x00 0x00 0x00 
 									0x00 0x00 0x00 0x01>;
+			status = "disabled";
 		};
 		
 		/* DSI_TO_HDMI I2C configuration */
@@ -62,8 +75,14 @@
 			adv7533,hpd-irq-gpio = <&msm_gpio 20 0x2003>;
 			clocks = <&clock_rpm clk_bb_clk2>;
 			clock-names = "ref_clk";
+			status = "disabled";
 		};
 		
+		sciaps_micro@59 {
+			compatible = "sciaps_micro";
+			reg = <0x59>;
+		};
+
 		/* DS1307 RTC module */
 		rtc@0x68 {
 			compatible = "dallas,ds1307";
@@ -77,6 +96,7 @@
 
 	i2c@78ba000 { /* BLSP1 QUP6 */
 		status = "ok";
+
 		focaltech@38{
 			compatible = "focaltech,5x06";
 			reg = <0x38>;
@@ -111,13 +131,15 @@
 			focaltech,fw-auto-cal;
 			focaltech,mirror_h;
 			focaltech,mirror_v;
+			status = "disabled";
 		};
 
 		atmel_maxtouch_ts@4a {
 			compatible = "atmel,maxtouch";
 			reg = <0x4a>;
 			interrupt-parent = <&msm_gpio>;
-			interrupts = <97 IRQ_TYPE_LEVEL_LOW>;
+			interrupts = <13 IRQ_TYPE_LEVEL_LOW>;
+			atmel,reset-gpio = <&msm_gpio 12 0x00>;
 		};
 	};
 
@@ -475,6 +497,7 @@
 };
 
 &spi_0 {
+	status = "disabled";
 	gpios = <&msm_gpio 19 0>, /* CLK  */
 			<&msm_gpio 17 0>, /* MISO */
 			<&msm_gpio 16 0>; /* MOSI */

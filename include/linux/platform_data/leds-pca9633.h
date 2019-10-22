@@ -27,9 +27,15 @@ enum pca9633_outdrv {
 	PCA9633_TOTEM_POLE, /* aka push-pull */
 };
 
+enum pca9633_och {
+	PCA9633_OCH_STOP,
+	PCA9633_OCH_ACK,
+};
+
 struct pca9633_platform_data {
 	struct led_platform_data leds;
 	enum pca9633_outdrv outdrv;
-};
+	enum pca9633_och	och;
+}; 
 
 #endif /* __LINUX_PCA9633_H*/

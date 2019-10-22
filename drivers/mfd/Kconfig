@@ -707,6 +707,14 @@ config MFD_PALMAS
 	  If you say yes here you get support for the Palmas
 	  series of PMIC chips from Texas Instruments.
 
+config MFD_SCIAPS_MICRO
+	tristate "SciAps Power Board Micro"
+	depends on I2C
+	default n
+	help
+	  Say Y here to enable support for SciAps Power Board
+	  PIC16F1527 functionality
+
 config MFD_TI_SSP
 	tristate "TI Sequencer Serial Port support"
 	depends on ARCH_DAVINCI_TNETV107X

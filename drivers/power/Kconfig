@@ -150,6 +150,13 @@ config BATTERY_SBS
 	  Say Y to include support for SBS battery driver for SBS-compliant
 	  gas gauges.
 
+config BATTERY_SMBUS
+	tristate "SMBus battery"
+	depends on I2C
+	default n
+	help
+	  Say Y to include support for SMBus compliant bus battery driver.
+
 config BATTERY_BQ27x00
 	tristate "BQ27x00 battery driver"
 	depends on I2C || I2C=n
