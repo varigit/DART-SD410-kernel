@@ -37,6 +37,7 @@
 			// should look into "sbs,sbs-battery" compatibility
 			compatible = "smbus-battery";
 			reg = <0xb>;
+			status = "disabled";
 		};
 	};
 
@@ -107,6 +108,18 @@
 				reg = <1>;
 				linux,default-trigger = "none";
 			};
+		};
+
+		battery@0x64 {
+			compatible = "ltc2943";
+			reg = <0x64>;
+			lltc,resistor-sense = <5>;
+			lltc,prescaler-exponent = <3>; /* 2^(2*3) = 64 */
+
+			//sciaps,gpio-charge-in-progress = <&msm_gpio 62 0>;
+			//sciaps,gpio-charge-completed = <&msm_gpio 21 0>;
+
+			status = "ok";
 		};
 
  	};
