@@ -44,9 +44,21 @@ config FB_MSM_MDSS_MDP3
 	The MDP3 provides support for an older version display controller
 	included in latest display sub-system, known as MDSS.
 
-config FB_MSM_MDSS_SPLASH_SCIAPS_AYW
-	bool "MDSS Splash Sciaps AYW"
+config FB_MSM_MDSS_SPLASH_SCIAPS_AYW_RUSTY
+	bool "MDSS Splash Logo Sciaps Analyze Your World - Rusty "
 	default n
 	---help---
-	MDSS Splash Sciaps AYW
+	MDSS Splash Logo Sciaps Analyze Your World - Rusty 
+
+config FB_MSM_MDSS_SPLASH_SCIAPS_AYW_BW
+	bool "MDSS Splash Logo Sciaps Analyze Your World - Black and White"
+	default n
+	---help---
+	MDSS Splash Logo Sciaps Analyze Your World - Black and White
+
+config FB_MSM_MDSS_SPLASH_SCIAPS_X550
+	bool "MDSS Splash Logo Sciaps X-550"
+	default n
+	---help---
+	MDSS Splash Logo Sciaps Logo X-550
 

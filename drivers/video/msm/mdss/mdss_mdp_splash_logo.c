@@ -27,8 +27,13 @@
 #include "mdss_fb.h"
 #include "mdss_mdp.h"
 
-#if defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_AYW)
+#if defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_AYW_RUSTY)
 #include "splash_sciaps_ayw.h"
+#elif defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_AYW_BW)
+//#include "splash_sciaps_ayw_bw.h"
+#error CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_AYW_BW is not yet supported 
+#elif defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_X550)
+#include "splash_sciaps_x550.h"
 #else
 #include "splash.h"
 #endif
