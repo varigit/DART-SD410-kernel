@@ -62,3 +62,21 @@ config FB_MSM_MDSS_SPLASH_SCIAPS_X550
 	---help---
 	MDSS Splash Logo Sciaps Logo X-550
 
+config FB_MSM_MDSS_SPLASH_SCIAPS_X_WITH_STROKE
+	bool "MDSS Splash Logo Sciaps X With Stroke"
+	default n
+	---help---
+	MDSS Splash Logo Sciaps Logo X with Stroke
+
+config FB_MSM_MDSS_SPLASH_SCIAPS_X_WITHOUT_STROKE
+	bool "MDSS Splash Logo Sciaps X Without Stroke"
+	default n
+	---help---
+	MDSS Splash Logo Sciaps Logo X without stroke
+
+config FB_MSM_MDSS_SPLASH_SCIAPS_X550_SCR
+	bool "MDSS Splash Logo Sciaps X-550 113x124"
+	default n
+	---help---
+	MDSS Splash Logo Sciaps Logo X-550 SCR 113x124
+

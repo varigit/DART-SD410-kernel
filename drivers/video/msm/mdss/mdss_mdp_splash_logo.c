@@ -34,6 +34,12 @@
 #error CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_AYW_BW is not yet supported 
 #elif defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_X550)
 #include "splash_sciaps_x550.h"
+#elif defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_X_WITH_STROKE)
+#include "splash_sciaps_x_with_stroke.h"
+#elif defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_X_WITHOUT_STROKE)
+#include "splash_sciaps_x_without_stroke.h"
+#elif defined(CONFIG_FB_MSM_MDSS_SPLASH_SCIAPS_X550_SCR)
+#include "splash_sciaps_scr.h"
 #else
 #include "splash.h"
 #endif
