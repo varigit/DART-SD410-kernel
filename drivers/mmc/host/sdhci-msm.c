@@ -505,6 +505,31 @@ static irqreturn_t sdhci_msm_pwr_irq(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
+static void sdhci_msm_prepare_transfer(struct sdhci_host *host,
+				       struct mmc_command *cmd)
+{
+	struct mmc_data *data = cmd->data;
+	u32 config;
+
+	if (!data)
+		return;
+
+	config = readl_relaxed(host->ioaddr + CORE_DLL_CONFIG);
+
+	/* CDR function must be disabled in case of write or tuning phase */
+	if (data->flags & MMC_DATA_WRITE ||
+	    cmd->opcode == MMC_SEND_TUNING_BLOCK ||
+	    cmd->opcode == MMC_SEND_TUNING_BLOCK_HS200) {
+		config |= CORE_CDR_EXT_EN;
+		config &= ~CORE_CDR_EN;
+	} else {
+		config |= CORE_CDR_EN;
+		config &= ~CORE_CDR_EXT_EN;
+	}
+
+	writel_relaxed(config, host->ioaddr + CORE_DLL_CONFIG);
+}
+
 static const struct of_device_id sdhci_msm_dt_match[] = {
 	{ .compatible = "qcom,sdhci-msm-v4" },
 	{},
@@ -519,6 +544,7 @@ static const struct sdhci_ops sdhci_msm_ops = {
 	.set_bus_width = sdhci_set_bus_width,
 	.set_uhs_signaling = sdhci_msm_set_uhs_signaling,
 	.voltage_switch = sdhci_msm_voltage_switch,
+	.prepare_transfer = sdhci_msm_prepare_transfer,
 };
 
 static const struct sdhci_pltfm_data sdhci_msm_pdata = {

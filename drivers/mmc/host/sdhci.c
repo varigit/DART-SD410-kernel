@@ -1125,6 +1125,9 @@ void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
 
 	sdhci_set_transfer_mode(host, cmd);
 
+	if (host->ops->prepare_transfer)
+		host->ops->prepare_transfer(host, cmd);
+	
 	if ((cmd->flags & MMC_RSP_136) && (cmd->flags & MMC_RSP_BUSY)) {
 		pr_err("%s: Unsupported response type!\n",
 			mmc_hostname(host->mmc));
