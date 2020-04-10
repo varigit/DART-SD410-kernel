@@ -17,7 +17,9 @@
 #include <linux/power_supply.h>
 #include <linux/slab.h>
 #include <linux/of_gpio.h>
+#include <linux/reboot.h>
 
+#include <linux/qpnp/power-on.h>
 
 //#define DEV_DBG	dev_info
 //#define DEV_DBG	dev_dbg
@@ -36,6 +38,10 @@
 
 #define LTC2941_MAX_PRESCALER_EXP	7
 #define LTC2943_MAX_PRESCALER_EXP	6
+#define LTC2941_MIN_VOLTAGE_LOW_THRES_uV 11000000
+#define LTC2941_VOLTAGE_LOW_THRES_uV	 12000000
+#define LTC2941_MAX_VOLTAGE_LOW_THRES_uV 14000000
+#define LTC2941_MIN_CHARGE_LOW_THRES 0
 
 enum ltc294x_reg {
 	LTC294X_REG_STATUS		= 0x00,
@@ -66,7 +72,8 @@ enum ltc294x_reg {
 #define LTC2941_NUM_REGS	0x08
 #define LTC2943_NUM_REGS	0x18
 
-#define LTC294x_BATT_CAPACITY_DEFAULT 50
+#define LTC294x_BATT_CAPACITY_DEFAULT	1
+#define LTC294x_BATT_CAPACITY_MIN		1
 
 struct ltc294x_info {
 	struct i2c_client *client;	/* I2C Client pointer */
@@ -94,6 +101,8 @@ struct ltc294x_info {
 	uint32_t		batt_capacity;
 	uint8_t			dc_present;
 	uint8_t			chg_enabled;
+	uint16_t		charge_low_thres;
+	uint32_t		voltage_low_thres_uV;
 };
 
 static inline int convert_bin_to_uAh(
@@ -156,7 +165,7 @@ static int ltc294x_write_regs(struct i2c_client *client,
 		return ret;
 	}
 
-	DEV_DBG(&client->dev, "%s (%#x, %d) -> %#x\n",
+	DEV_DBG(&client->dev, "  >>>>> %s (%#x, %d) -> %#x\n",
 		__func__, reg, num_regs, *buf);
 
 	return 0;
@@ -196,8 +205,24 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
 				"Could not write register\n");
 			goto error_exit;
 		}
+		DEV_DBG(&info->client->dev, "ltc294x_reset: Control register was reset\n");
+
+		{
+			int8_t value[2] = {(uint8_t)(info->charge_low_thres>>8), (uint8_t)(info->charge_low_thres) };
+			ret = ltc294x_write_regs(info->client,
+								LTC294X_REG_ACC_CHARGE_MSB, value, 2);
+
+			if (ret < 0) {
+				dev_err(&info->client->dev,
+							"ltc294x_reset: Could not write to register LTC294X_REG_ACC_CHARGE_MSB\n");
+			}
+			else {
+				DEV_DBG(&info->client->dev, "ltc294x_reset: ---->  Just updated LTC294X_REG_ACC_CHARGE_MSB!\n");
+			}
+		}
+
 	}
-#if 0	
+#if 0
 	{
 		uint8_t dataw[2] = {(uint8_t)(LTC294X_THRESH_HIGH>>8), (uint8_t)LTC294X_THRESH_HIGH};
 		uint8_t datar[2];
@@ -222,7 +247,7 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
 			}
 		}
 	}
-#endif	
+#endif
 	return 0;
 
 error_exit:
@@ -470,6 +495,9 @@ static int ltc294x_get_property(struct power_supply *psy,
 	//case POWER_SUPPLY_PROP_PRESENT:
 	//	val->intval = info->dc_present;
 	//	break;
+	case POWER_SUPPLY_PROP_TECHNOLOGY:
+		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
+		break;
 	case POWER_SUPPLY_PROP_ONLINE:
 		val->intval = info->chg_enabled ? info->dc_present : 0;
 		break;
@@ -525,6 +553,8 @@ static int ltc294x_set_property(struct power_supply *psy,
 		return ltc294x_set_charge_now(info, val->intval);
 	case POWER_SUPPLY_PROP_ONLINE:
 		//It is already set...
+
+		DEV_DBG(&info->client->dev, "ltc294x_set_property : POWER_SUPPLY_PROP_ONLINE\n");
 		return 0;
 	default:
 		return -EPERM;
@@ -550,7 +580,9 @@ static void ltc294x_external_power_changed(struct power_supply *psy)
 	union power_supply_propval prop = {0,};
 	int rc;
 
-#if 0	
+	DEV_DBG(&info->client->dev, "----> ltc294x_external_power_changed\n");
+
+#if 0
 	rc = info->usb_psy->get_property(info->usb_psy,
 				POWER_SUPPLY_PROP_ONLINE, &prop);
 
@@ -563,7 +595,7 @@ static void ltc294x_external_power_changed(struct power_supply *psy)
 				pr_err("ltc294x_external_power_changed: could not set usb online, rc=%d\n", rc);
 		}
 	}
-#endif	
+#endif
 	rc = info->usb_psy->get_property(info->supply,
 				POWER_SUPPLY_PROP_ONLINE, &prop);
 	if (rc < 0)
@@ -597,6 +629,10 @@ static void ltc294x_update(struct ltc294x_info *info, bool update_it)
 
 	}
 	else {
+		if (update_it && (gauge_voltage <= info->voltage_low_thres_uV || (charge_now && charge_now <= info->charge_low_thres))) {
+			DEV_DBG(&info->client->dev, "ltc294x_update: ----> Powering off...\n");
+			kernel_power_off();
+		}
 		if (info->gpio_charge_in_progress >= 0 && info->gpio_charge_completed >= 0) {
 			charge_in_progress	= gpio_get_value(info->gpio_charge_in_progress);
 			charge_complete		= gpio_get_value(info->gpio_charge_completed);
@@ -666,7 +702,7 @@ static void ltc294x_update(struct ltc294x_info *info, bool update_it)
 		info->batt_status = batt_status;
 		updated = true;
 		if (info->batt_status == POWER_SUPPLY_STATUS_FULL) {
-#if 0			
+#if 0
 			uint8_t value[2] = {0xff, 0xff};
 			int ret = ltc294x_write_regs(info->client,
 								LTC294X_REG_ACC_CHARGE_MSB, value, 2);
@@ -678,7 +714,7 @@ static void ltc294x_update(struct ltc294x_info *info, bool update_it)
 			else {
 				DEV_DBG(&info->client->dev, "ltc294x_update: ---->  Just updated LTC294X_REG_ACC_CHARGE_MSB!\n");
 			}
-#endif			
+#endif
 			charge_now = LTC294x_BATTERY_MAX_CHARGE;
 		}
 
@@ -700,13 +736,31 @@ static void ltc294x_update(struct ltc294x_info *info, bool update_it)
 		}
 	}
 	if (charge != info->charge) {
+		uint16_t batt_max_capacity = LTC294x_BATTERY_MAX_CHARGE;
 		info->charge = charge;
 
-		capacity = charge;
-		capacity *= 10000;
-		capacity /= LTC294x_BATTERY_MAX_CHARGE;
-		capacity += 50;
-		capacity /=100;
+		if (batt_max_capacity > info->charge_low_thres) {
+			batt_max_capacity -= info->charge_low_thres;
+		}
+		if (charge <= info->charge_low_thres) {
+			charge = 0;
+		}
+		else {
+			charge -= info->charge_low_thres;
+		}
+		capacity = 0;
+		if (charge) {
+			capacity = charge;
+			capacity *= 10000;
+			capacity /= batt_max_capacity;
+			capacity += 50;
+			capacity /=100;
+		}
+
+		if (!capacity) {
+			//If capacity is 0% always show 1% as the device is to be powered off soon... 
+			capacity = LTC294x_BATT_CAPACITY_MIN;
+		}
 
 		if (capacity != info->batt_capacity) {
 			info->batt_capacity = capacity;
@@ -745,13 +799,20 @@ static void ltc294x_work(struct work_struct *work)
 static int determine_initial_status(struct ltc294x_info *info)
 {
 	int ret = ltc294x_reset(info, info->prescaler_exp);
-	if (ret < 0) {
-		return ret;
+	if (info) {
+		info->batt_status	= POWER_SUPPLY_STATUS_UNKNOWN;
+		info->batt_capacity = LTC294x_BATT_CAPACITY_DEFAULT;
+		if (ret < 0) {
+			// Do nothing
+		}
+		else {
+			info->batt_status = POWER_SUPPLY_STATUS_UNKNOWN;
+			info->batt_capacity = LTC294x_BATT_CAPACITY_DEFAULT;
+			ltc294x_update(info, false);
+		}
 	}
 	else {
-		info->batt_status = POWER_SUPPLY_STATUS_UNKNOWN;
-		info->batt_capacity = LTC294x_BATT_CAPACITY_DEFAULT;
-		ltc294x_update(info, false);
+		return -1;
 	}
 
 	return 0;
@@ -771,6 +832,7 @@ static enum power_supply_property ltc294x_properties[] = {
 	POWER_SUPPLY_PROP_PRESENT,
 	POWER_SUPPLY_PROP_CHARGING_ENABLED,
 	POWER_SUPPLY_PROP_CHARGE_TYPE,
+	POWER_SUPPLY_PROP_TECHNOLOGY,
 	POWER_SUPPLY_PROP_CAPACITY,
 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
@@ -813,6 +875,8 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
 	int ret;
 	u32 prescaler_exp;
 	s32 r_sense;
+	u32 charge_low_thres;
+	u32 voltage_low_thres_uV;
 	struct device_node *np;
 	struct power_supply *usb_psy;
 
@@ -837,6 +901,8 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
 	info->batt_psy.name = "battery-gauge";//np->name;
 
 	info->dc_psy.name = "dc";
+	info->charge_low_thres		= LTC2941_MIN_CHARGE_LOW_THRES;
+	info->voltage_low_thres_uV	= LTC2941_VOLTAGE_LOW_THRES_uV;
 
 	/* r_sense can be negative, when sense+ is connected to the battery
 	 * instead of the sense-. This results in reversed measurements. */
@@ -854,6 +920,40 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
 		dev_warn(&client->dev,
 			"ltc294x_i2c_probe: lltc,prescaler-exponent not in devicetree\n");
 		prescaler_exp = LTC2941_MAX_PRESCALER_EXP;
+	}
+
+	ret = of_property_read_u32(np, "sciaps,charge-low-thres",
+		&charge_low_thres);
+
+	if (ret < 0) {
+		dev_warn(&client->dev,
+			"ltc294x_i2c_probe: sciaps,charge-low-thres not in devicetree. Using the default value: %d \n", LTC2941_MIN_CHARGE_LOW_THRES);
+	}
+	else {
+		if (charge_low_thres >= LTC294X_MID_SUPPLY) {
+			dev_warn(&client->dev,
+				"ltc294x_i2c_probe: sciaps,charge-low-thres invalid value. Using the default value: %d \n", LTC2941_MIN_CHARGE_LOW_THRES);
+		}
+		else {
+			info->charge_low_thres = charge_low_thres;
+		}
+	}
+
+	ret = of_property_read_u32(np, "sciaps,voltage-low-thres-uV",
+		&voltage_low_thres_uV);
+
+	if (ret < 0) {
+		dev_warn(&client->dev,
+			"ltc294x_i2c_probe: sciaps,voltage-low-thres-uV not in devicetree. Using the default value: %d \n", LTC2941_VOLTAGE_LOW_THRES_uV);
+	}
+	else {
+		if (voltage_low_thres_uV < LTC2941_MIN_VOLTAGE_LOW_THRES_uV || voltage_low_thres_uV > LTC2941_MAX_VOLTAGE_LOW_THRES_uV) {
+			dev_warn(&client->dev,
+				"ltc294x_i2c_probe: sciaps,sciaps,voltage-low-thres-uV invalid value. Using the default value: %d \n", LTC2941_VOLTAGE_LOW_THRES_uV);
+		}
+		else {
+			info->voltage_low_thres_uV = voltage_low_thres_uV;
+		}
 	}
 
 	if (1 == of_gpio_named_count(np, "sciaps,gpio-charge-in-progress")) {
