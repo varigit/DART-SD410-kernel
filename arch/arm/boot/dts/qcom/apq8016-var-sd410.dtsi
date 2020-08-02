@@ -116,8 +116,9 @@
 			lltc,resistor-sense = <5>;
 			lltc,prescaler-exponent = <3>; /* 2^(2*3) = 64 */
 
-			sciaps,charge-low-thres = <6553>;			// 10%
-			sciaps,voltage-low-thres-uV = <12000000>;	// 12V
+			sciaps,charge-low-thres = <6553>;
+			sciaps,voltage-crit-low-thres-uV = <12000000>;
+			sciaps,voltage-charge-low-thres-uV = <13500000>;
 			//sciaps,gpio-charge-in-progress = <&msm_gpio 62 0>;
 			//sciaps,gpio-charge-completed = <&msm_gpio 21 0>;
 
