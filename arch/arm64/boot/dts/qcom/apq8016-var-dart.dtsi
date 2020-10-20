@@ -324,11 +324,14 @@
 		cci@1b0c000 {
 			status = "okay";
 			i2c-bus@0 {
-				status = "okay";
+				reg = <0>;
+				clock-frequency = <100000>;
+				#address-cells = <1>;
+				#size-cells = <0>;
 
-				camera_rear@3b {
+				camera_rear@3a {
 					compatible = "ovti,ov5645";
-					reg = <0x3b>;
+					reg = <0x3a>;
 
 					enable-gpios = <&msmgpio 34 GPIO_ACTIVE_HIGH>;
 					reset-gpios = <&msmgpio 35 GPIO_ACTIVE_LOW>;
@@ -343,7 +346,7 @@
 					vdda-supply = <&camera_vdda_2v8>;
 					vddd-supply = <&camera_vddd_1v5>;
 
-					status = "disabled";
+					status = "okay";
 
 					port {
 						ov5645_ep: endpoint {
@@ -354,9 +357,9 @@
 					};
 				};
 
-				camera_front@3c {
+				camera_front@3b {
 					compatible = "ovti,ov5645";
-					reg = <0x3c>;
+					reg = <0x3b>;
 
 					enable-gpios = <&msmgpio 33 GPIO_ACTIVE_HIGH>;
 					reset-gpios = <&msmgpio 28 GPIO_ACTIVE_LOW>;
@@ -365,6 +368,7 @@
 
 					clocks = <&gcc GCC_CAMSS_MCLK1_CLK>;
 					clock-names = "xclk";
+
 					clock-frequency = <23880000>;
 
 					vdddo-supply = <&camera_vdddo_1v8>;
@@ -395,7 +399,7 @@
 						clock-lanes = <1>;
 						data-lanes = <0 2>;
 						remote-endpoint = <&ov5645_ep>;
-						status = "disabled";
+						status = "okay";
 					};
 				};
 				port@1 {

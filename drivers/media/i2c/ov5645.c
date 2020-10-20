@@ -61,6 +61,9 @@
 #define OV5645_SDE_SAT_U		0x5583
 #define OV5645_SDE_SAT_V		0x5584
 
+#define OV5645_DEFAULT_SLAVE_ID 0x3c
+#define OV5645_REG_SLAVE_ID		0x3100
+
 /* regulator supplies */
 static const char * const ov5645_supply_name[] = {
 	"vdddo", /* Digital I/O (1.8V) supply */
@@ -514,6 +517,34 @@ static const s64 link_freq[] = {
 	336000000
 };
 
+static int ov5645_init_slave_id(struct ov5645 *sensor)
+{
+	struct i2c_client *client = sensor->i2c_client;
+	struct i2c_msg msg;
+	u8 buf[3];
+	int ret;
+
+	if (client->addr == OV5645_DEFAULT_SLAVE_ID)
+		return 0;
+
+	buf[0] = OV5645_REG_SLAVE_ID >> 8;
+	buf[1] = OV5645_REG_SLAVE_ID & 0xff;
+	buf[2] = client->addr << 1;
+
+	msg.addr = OV5645_DEFAULT_SLAVE_ID;
+	msg.flags = 0;
+	msg.buf = buf;
+	msg.len = sizeof(buf);
+
+	ret = i2c_transfer(client->adapter, &msg, 1);
+	if (ret < 0) {
+		dev_err(&client->dev, "%s: failed with %d\n", __func__, ret);
+		return ret;
+	}
+
+	return 0;
+}
+
 static const struct ov5645_mode_info ov5645_mode_info_data[] = {
 	{
 		.width = 1280,
@@ -684,6 +715,13 @@ static int ov5645_s_power(struct v4l2_subdev *sd, int on)
 			ret = ov5645_set_power_on(ov5645);
 			if (ret < 0)
 				goto exit;
+			ret = ov5645_init_slave_id(ov5645);
+			if (ret < 0) {
+				dev_err(ov5645->dev,
+					"could not set new i2c address\n");
+				ov5645_set_power_off(ov5645);
+				goto exit;
+			}
 
 			ret = ov5645_set_register_array(ov5645,
 					ov5645_global_init_setting,
@@ -694,7 +732,7 @@ static int ov5645_s_power(struct v4l2_subdev *sd, int on)
 				ov5645_set_power_off(ov5645);
 				goto exit;
 			}
-
+			
 			usleep_range(500, 1000);
 		} else {
 			ov5645_write_reg(ov5645, OV5645_IO_MIPI_CTRL00, 0x58);
