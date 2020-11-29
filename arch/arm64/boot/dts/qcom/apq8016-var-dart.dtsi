@@ -346,7 +346,7 @@
 					vdda-supply = <&camera_vdda_2v8>;
 					vddd-supply = <&camera_vddd_1v5>;
 
-					status = "okay";
+					status = "disabled";
 
 					port {
 						ov5645_ep: endpoint {
@@ -399,7 +399,7 @@
 						clock-lanes = <1>;
 						data-lanes = <0 2>;
 						remote-endpoint = <&ov5645_ep>;
-						status = "okay";
+						status = "disabled";
 					};
 				};
 				port@1 {
