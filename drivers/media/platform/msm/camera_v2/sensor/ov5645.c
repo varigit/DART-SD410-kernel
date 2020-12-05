@@ -22,6 +22,7 @@
 
 DEFINE_MSM_MUTEX(ov5645_mut);
 static struct msm_sensor_ctrl_t ov5645_s_ctrl;
+static struct msm_sensor_ctrl_t ov5645_0_s_ctrl;
 
 static struct msm_sensor_power_setting ov5645_power_setting[] = {
 	{
@@ -480,6 +481,15 @@ static struct v4l2_subdev_info ov5645_subdev_info[] = {
 	},
 };
 
+static struct v4l2_subdev_info ov5645_0_subdev_info[] = {
+	{
+		.code   = V4L2_MBUS_FMT_YUYV8_2X8,
+		.colorspace = V4L2_COLORSPACE_JPEG,
+		.fmt    = 1,
+		.order    = 0,
+	},
+};
+
 static struct msm_camera_i2c_reg_conf ov5645_start_settings[] = {
 	{0x3008, 0x02,},
 };
@@ -499,14 +509,15 @@ static struct msm_camera_i2c_reg_conf ov5645_disable_aec_settings[] = {
 };
 
 static const struct i2c_device_id ov5645_i2c_id[] = {
-	{OV5645_SENSOR_NAME, (kernel_ulong_t)&ov5645_s_ctrl},
+	{"ov5645", (kernel_ulong_t)&ov5645_s_ctrl},
+	{"ov56450", (kernel_ulong_t)&ov5645_0_s_ctrl},
 	{ }
 };
 
 static int32_t msm_ov5645_i2c_probe(struct i2c_client *client,
 	const struct i2c_device_id *id)
 {
-	return msm_sensor_i2c_probe(client, id, &ov5645_s_ctrl);
+	return msm_sensor_i2c_probe(client, id, (struct msm_sensor_ctrl_t *)(id->driver_data));
 }
 
 static struct i2c_driver ov5645_i2c_driver = {
@@ -521,8 +532,13 @@ static struct msm_camera_i2c_client ov5645_sensor_i2c_client = {
 	.addr_type = MSM_CAMERA_I2C_WORD_ADDR,
 };
 
+static struct msm_camera_i2c_client ov5645_0_sensor_i2c_client = {
+	.addr_type = MSM_CAMERA_I2C_WORD_ADDR,
+};
+
 static const struct of_device_id ov5645_dt_match[] = {
 	{.compatible = "ovti,ov5645", .data = &ov5645_s_ctrl},
+	{.compatible = "ovti,ov56450", .data = &ov5645_0_s_ctrl},
 	{}
 };
 
@@ -1129,6 +1145,17 @@ static struct msm_sensor_ctrl_t ov5645_s_ctrl = {
 	.sensor_v4l2_subdev_info_size = ARRAY_SIZE(ov5645_subdev_info),
 	.func_tbl = &ov5645_sensor_func_tbl,
 };
+
+static struct msm_sensor_ctrl_t ov5645_0_s_ctrl = {
+	.sensor_i2c_client = &ov5645_0_sensor_i2c_client,
+	.power_setting_array.power_setting = ov5645_power_setting,
+	.power_setting_array.size = ARRAY_SIZE(ov5645_power_setting),
+	.msm_sensor_mutex = &ov5645_mut,
+	.sensor_v4l2_subdev_info = ov5645_0_subdev_info,
+	.sensor_v4l2_subdev_info_size = ARRAY_SIZE(ov5645_0_subdev_info),
+	.func_tbl = &ov5645_sensor_func_tbl,
+};
+
 
 module_init(ov5645_init_module);
 module_exit(ov5645_exit_module);

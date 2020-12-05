@@ -1062,7 +1062,7 @@
 		};
 
 		tpiu_setb_12 {
-			qcom,pins = <&gp 35>;
+			qcom,pins = <&gp 97>;
 			qcom,num-grp-pins = <1>;
 			qcom,pin-func = <9>;
 			label = "tpiu-setb-12";

@@ -124,6 +124,7 @@ static int32_t msm_sensor_get_dt_data(struct device_node *of_node,
 	uint16_t *gpio_array = NULL;
 	uint16_t gpio_array_size = 0;
 	uint32_t id_info[3];
+	uint32_t id_info_ex[2];
 
 	s_ctrl->sensordata = kzalloc(sizeof(
 		struct msm_camera_sensor_board_info),
@@ -294,14 +295,25 @@ static int32_t msm_sensor_get_dt_data(struct device_node *of_node,
 		goto FREE_SLAVE_INFO;
 	}
 
+	rc = of_property_read_u32_array(of_node, "qcom,slave-id-ex",
+		id_info_ex, 2);
+	if (rc < 0) {
+		id_info_ex[0] = id_info[0];
+		id_info_ex[1] = 0;
+	}
+
 	sensordata->slave_info->sensor_slave_addr = id_info[0];
 	sensordata->slave_info->sensor_id_reg_addr = id_info[1];
 	sensordata->slave_info->sensor_id = id_info[2];
-	CDBG("%s:%d slave addr 0x%x sensor reg 0x%x id 0x%x\n",
+	sensordata->slave_info->sensor_slave_addr_default = id_info_ex[0];
+	sensordata->slave_info->sensor_slave_addr_reg_addr = id_info_ex[1];
+	CDBG("%s:%d slave addr 0x%x(default: 0x%x) sensor reg 0x%x id 0x%x slave addr reg 0x%x\n",
 		__func__, __LINE__,
 		sensordata->slave_info->sensor_slave_addr,
+		sensordata->slave_info->sensor_slave_addr_default,
 		sensordata->slave_info->sensor_id_reg_addr,
-		sensordata->slave_info->sensor_id);
+		sensordata->slave_info->sensor_id,
+		sensordata->slave_info->sensor_slave_addr_reg_addr);
 
 	/*Optional property, don't return error if absent */
 	ret = of_property_read_string(of_node, "qcom,vdd-cx-name",
@@ -492,6 +504,7 @@ int msm_sensor_match_id(struct msm_sensor_ctrl_t *s_ctrl)
 	struct msm_camera_i2c_client *sensor_i2c_client;
 	struct msm_camera_slave_info *slave_info;
 	const char *sensor_name;
+	uint16_t i2c_addr = 0;
 
 	if (!s_ctrl) {
 		pr_err("%s:%d failed: %p\n",
@@ -512,17 +525,70 @@ int msm_sensor_match_id(struct msm_sensor_ctrl_t *s_ctrl)
 	rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
 		sensor_i2c_client, slave_info->sensor_id_reg_addr,
 		&chipid, MSM_CAMERA_I2C_WORD_DATA);
+
+	i2c_addr = 0;
+	if (rc < 0
+			&& slave_info->sensor_slave_addr != slave_info->sensor_slave_addr_default
+			&& slave_info->sensor_slave_addr_reg_addr) {
+		i2c_addr = s_ctrl->sensordata->slave_info->sensor_slave_addr;
+		s_ctrl->sensordata->slave_info->sensor_slave_addr = slave_info->sensor_slave_addr_default;
+		sensor_i2c_client->cci_client->sid = s_ctrl->sensordata->slave_info->sensor_slave_addr >> 1;
+		rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
+						sensor_i2c_client, slave_info->sensor_id_reg_addr,
+						&chipid, MSM_CAMERA_I2C_WORD_DATA);
+	}
+
 	if (rc < 0) {
 		pr_err("%s: %s: read id failed\n", __func__, sensor_name);
 		return rc;
 	}
 
-	CDBG("%s: read id: 0x%x expected id 0x%x:\n", __func__, chipid,
+	CDBG("%s: read id: 0x%x expected id 0x%x\n", __func__, chipid,
 		slave_info->sensor_id);
 	if (chipid != slave_info->sensor_id) {
 		pr_err("msm_sensor_match_id chip id doesnot match\n");
 		return -ENODEV;
 	}
+
+	if (i2c_addr) {
+		uint16_t current_i2c_addr = 0;
+
+		CDBG("%s: changing sensor slave addr for chipid: 0x%x\n", __func__, chipid);
+		rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
+						sensor_i2c_client, slave_info->sensor_slave_addr_reg_addr,
+						&current_i2c_addr, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0) {
+			pr_err("%s: %s: read i2c address failed\n", __func__, sensor_name);
+		}
+		else {
+			CDBG("%s: read i2c_addr: 0x%x\n", __func__, current_i2c_addr);
+			if (current_i2c_addr != i2c_addr) {
+				rc = sensor_i2c_client->i2c_func_tbl->i2c_write(
+							sensor_i2c_client, slave_info->sensor_slave_addr_reg_addr,
+							i2c_addr, MSM_CAMERA_I2C_BYTE_DATA);
+				if (rc < 0) {
+					pr_err("%s: %s: write i2c address failed\n", __func__, sensor_name);
+				}
+				else {
+					CDBG("%s: %s: slave address changed to 0x%x\n", __func__, sensor_name, i2c_addr);
+					s_ctrl->sensordata->slave_info->sensor_slave_addr = i2c_addr;
+					sensor_i2c_client->cci_client->sid = s_ctrl->sensordata->slave_info->sensor_slave_addr >> 1;
+
+					rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
+								sensor_i2c_client, slave_info->sensor_slave_addr_reg_addr,
+								&current_i2c_addr, MSM_CAMERA_I2C_BYTE_DATA);
+					if (rc < 0) {
+						pr_err("%s: %s: read i2c address failed\n", __func__, sensor_name);
+					}
+					else {
+						CDBG("%s: read i2c_addr: 0x%x\n", __func__, current_i2c_addr);
+					}
+				}
+			}
+		}
+
+	}
+
 	return rc;
 }
 
