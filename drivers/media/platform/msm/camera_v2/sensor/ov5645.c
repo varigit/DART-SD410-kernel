@@ -13,12 +13,15 @@
 #include "msm_sensor.h"
 #include "msm_cci.h"
 #include "msm_camera_io_util.h"
+#include "ov5645-af.h"
+#define OV5645_SENSOR_ID 0x5645
 #define OV5645_SENSOR_NAME "ov5645"
 #define PLATFORM_DRIVER_NAME "msm_camera_ov5645"
 #define ov5645_obj ov5645_##obj
 
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
+
 
 DEFINE_MSM_MUTEX(ov5645_mut);
 static struct msm_sensor_ctrl_t ov5645_s_ctrl;
@@ -233,8 +236,8 @@ static struct msm_camera_i2c_reg_conf ov5645_1080P_settings[] = {
 
 
 static struct msm_camera_i2c_reg_conf ov5645_recommend_settings[] = {
-	{0x3103, 0x11,},
-	{0x3008, 0x82,},
+	//{0x3103, 0x11,},
+	//{0x3008, 0x82,},
 	{0x3008, 0x42,},
 	{0x3103, 0x03,},
 	{0x3503, 0x07,},
@@ -630,6 +633,9 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_INIT_SETTING:
 		/* 1. Write Recommend settings */
 		/* 2. Write change settings */
+		if (ov5645_af_check_sensor_id(s_ctrl->sensor_i2c_client, OV5645_SENSOR_ID, true)) {
+			ov5645_af_init(s_ctrl->sensor_i2c_client, true);
+		}
 		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
 			i2c_write_conf_tbl(
 			s_ctrl->sensor_i2c_client, ov5645_recommend_settings,
@@ -655,7 +661,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 				s_ctrl->sensor_i2c_client, ov5645_full_settings,
 				ARRAY_SIZE(ov5645_full_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-				pr_err("%s:%d res =%d\n ov5645_full_settings ",
+				pr_err("%s:%d res =%d ov5645_full_settings\n",
 				__func__, __LINE__, res);
 		} else if (res == MSM_SENSOR_RES_QTR) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -716,6 +722,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 			s_ctrl->sensor_i2c_client, ov5645_start_settings,
 			ARRAY_SIZE(ov5645_start_settings),
 			MSM_CAMERA_I2C_BYTE_DATA);
+		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
 		break;
 	case CFG_GET_SENSOR_INIT_PARAMS:
 		cdata->cfg.sensor_init_params.modes_supported =
@@ -838,10 +845,12 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_AUTOFOCUS:
 		/* TO-DO: set the Auto Focus */
 		pr_debug("%s: Setting Auto Focus", __func__);
+		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
 		break;
 	case CFG_CANCEL_AUTOFOCUS:
 		/* TO-DO: Cancel the Auto Focus */
 		pr_debug("%s: Cancelling Auto Focus", __func__);
+		ov5645_af_cancel_focus(s_ctrl->sensor_i2c_client);
 		break;
 	case CFG_SET_ISO:
 		break;
@@ -911,6 +920,9 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_INIT_SETTING:
 		/* 1. Write Recommend settings */
 		/* 2. Write change settings */
+		if (ov5645_af_check_sensor_id(s_ctrl->sensor_i2c_client, OV5645_SENSOR_ID, true)) {
+			ov5645_af_init(s_ctrl->sensor_i2c_client, true);
+		}
 		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
 			i2c_write_conf_tbl(
 			s_ctrl->sensor_i2c_client, ov5645_recommend_settings,
@@ -937,7 +949,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 				s_ctrl->sensor_i2c_client, ov5645_full_settings,
 				ARRAY_SIZE(ov5645_full_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-				pr_err("%s:%d res =%d\n ov5645_full_settings ",
+				pr_err("%s:%d res =%d ov5645_full_settings\n",
 				__func__, __LINE__, res);
 		} else if (res == MSM_SENSOR_RES_QTR) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -992,11 +1004,13 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 			rc = -EFAULT;
 			break;
 		}
+
 		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
 			i2c_write_conf_tbl(
 			s_ctrl->sensor_i2c_client, ov5645_start_settings,
 			ARRAY_SIZE(ov5645_start_settings),
 			MSM_CAMERA_I2C_BYTE_DATA);
+		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
 		break;
 	case CFG_GET_SENSOR_INIT_PARAMS:
 		cdata->cfg.sensor_init_params.modes_supported =
@@ -1096,10 +1110,12 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_AUTOFOCUS:
 		/* TO-DO: set the Auto Focus */
 		pr_debug("%s: Setting Auto Focus", __func__);
+		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
 		break;
 	case CFG_CANCEL_AUTOFOCUS:
 		/* TO-DO: Cancel the Auto Focus */
 		pr_debug("%s: Cancelling Auto Focus", __func__);
+		ov5645_af_cancel_focus(s_ctrl->sensor_i2c_client);
 		break;
 	case CFG_SET_ISO:
 		break;
