@@ -1538,6 +1538,8 @@
 		interrupts = <0 98 0>;
 		qcom,clk-freq-out = <100000>;  // Was 400000
 		qcom,clk-freq-in  = <19200000>;
+		qcom,fs-clk-div = <104>;
+		qcom,high-time-clk-div = <82>;
 		clock-names = "iface_clk", "core_clk";
 		clocks = <&clock_gcc clk_gcc_blsp1_ahb_clk>,
 			<&clock_gcc clk_gcc_blsp1_qup4_i2c_apps_clk>;
