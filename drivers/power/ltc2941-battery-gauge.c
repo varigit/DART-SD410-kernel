@@ -635,8 +635,10 @@ static void ltc294x_update(struct ltc294x_info *info, bool update_it)
 		if (update_it && (gauge_voltage <= info->voltage_crit_low_thres_uV 
 							|| (charge_now && charge_now <= info->charge_low_thres && gauge_voltage < info->voltage_charge_low_thres_uV)
 						)) {
-			DEV_DBG(&info->client->dev, "ltc294x_update: ----> Powering off...\n");
-			kernel_power_off();
+			if (gauge_current <= LTC294x_BATTERY_DISCHARGING_THRES_CURR) {
+				DEV_DBG(&info->client->dev, "ltc294x_update: ----> Powering off...\n");
+				kernel_power_off();
+			}
 		}
 		if (info->gpio_charge_in_progress >= 0 && info->gpio_charge_completed >= 0) {
 			charge_in_progress	= gpio_get_value(info->gpio_charge_in_progress);
