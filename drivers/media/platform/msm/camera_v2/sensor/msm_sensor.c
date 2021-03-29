@@ -124,7 +124,7 @@ static int32_t msm_sensor_get_dt_data(struct device_node *of_node,
 	uint16_t *gpio_array = NULL;
 	uint16_t gpio_array_size = 0;
 	uint32_t id_info[3];
-	uint32_t id_info_ex[2];
+	uint32_t id_info_ex[3];
 
 	s_ctrl->sensordata = kzalloc(sizeof(
 		struct msm_camera_sensor_board_info),
@@ -296,10 +296,11 @@ static int32_t msm_sensor_get_dt_data(struct device_node *of_node,
 	}
 
 	rc = of_property_read_u32_array(of_node, "qcom,slave-id-ex",
-		id_info_ex, 2);
+		id_info_ex, 3);
 	if (rc < 0) {
 		id_info_ex[0] = id_info[0];
 		id_info_ex[1] = 0;
+		id_info_ex[2] = 0;
 	}
 
 	sensordata->slave_info->sensor_slave_addr = id_info[0];
@@ -307,13 +308,15 @@ static int32_t msm_sensor_get_dt_data(struct device_node *of_node,
 	sensordata->slave_info->sensor_id = id_info[2];
 	sensordata->slave_info->sensor_slave_addr_default = id_info_ex[0];
 	sensordata->slave_info->sensor_slave_addr_reg_addr = id_info_ex[1];
-	CDBG("%s:%d slave addr 0x%x(default: 0x%x) sensor reg 0x%x id 0x%x slave addr reg 0x%x\n",
+	sensordata->slave_info->sensor_ctrl_mask = id_info_ex[2];
+	CDBG("%s:%d slave addr 0x%x(default: 0x%x) sensor reg 0x%x id 0x%x slave addr reg 0x%x ctrl mask 0x%x\n",
 		__func__, __LINE__,
 		sensordata->slave_info->sensor_slave_addr,
 		sensordata->slave_info->sensor_slave_addr_default,
 		sensordata->slave_info->sensor_id_reg_addr,
 		sensordata->slave_info->sensor_id,
-		sensordata->slave_info->sensor_slave_addr_reg_addr);
+		sensordata->slave_info->sensor_slave_addr_reg_addr,
+		sensordata->slave_info->sensor_ctrl_mask);
 
 	/*Optional property, don't return error if absent */
 	ret = of_property_read_string(of_node, "qcom,vdd-cx-name",

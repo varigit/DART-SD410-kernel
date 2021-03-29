@@ -9,8 +9,8 @@
 #include "ov5645-af-firmware.h"
 
 #undef CDBG
-//#define CDBG(fmt, args...) pr_debug(fmt, ##args)
-#define CDBG(fmt, args...) pr_notice(fmt, ##args)
+#define CDBG(fmt, args...) pr_debug(fmt, ##args)
+//#define CDBG(fmt, args...) pr_err(fmt, ##args)
 
 
 static int write_cmos_sensor(struct msm_camera_i2c_client *sensor_i2c_client, uint16_t address, uint8_t value) 

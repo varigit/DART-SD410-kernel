@@ -21,6 +21,7 @@
 
 #undef CDBG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
+//#define CDBG(fmt, args...) pr_err(fmt, ##args)
 
 
 DEFINE_MSM_MUTEX(ov5645_mut);
@@ -633,8 +634,13 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_INIT_SETTING:
 		/* 1. Write Recommend settings */
 		/* 2. Write change settings */
-		if (ov5645_af_check_sensor_id(s_ctrl->sensor_i2c_client, OV5645_SENSOR_ID, true)) {
-			ov5645_af_init(s_ctrl->sensor_i2c_client, true);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			if (ov5645_af_check_sensor_id(s_ctrl->sensor_i2c_client, OV5645_SENSOR_ID, true)) {
+				ov5645_af_init(s_ctrl->sensor_i2c_client, true);
+			}
+			else {
+				s_ctrl->sensordata->slave_info->sensor_ctrl_mask &= ~0x0001;
+			}
 		}
 		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
 			i2c_write_conf_tbl(
@@ -722,7 +728,9 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 			s_ctrl->sensor_i2c_client, ov5645_start_settings,
 			ARRAY_SIZE(ov5645_start_settings),
 			MSM_CAMERA_I2C_BYTE_DATA);
-		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		}
 		break;
 	case CFG_GET_SENSOR_INIT_PARAMS:
 		cdata->cfg.sensor_init_params.modes_supported =
@@ -845,12 +853,16 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_AUTOFOCUS:
 		/* TO-DO: set the Auto Focus */
 		pr_debug("%s: Setting Auto Focus", __func__);
-		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		}
 		break;
 	case CFG_CANCEL_AUTOFOCUS:
 		/* TO-DO: Cancel the Auto Focus */
 		pr_debug("%s: Cancelling Auto Focus", __func__);
-		ov5645_af_cancel_focus(s_ctrl->sensor_i2c_client);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			ov5645_af_cancel_focus(s_ctrl->sensor_i2c_client);
+		}
 		break;
 	case CFG_SET_ISO:
 		break;
@@ -920,8 +932,13 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_INIT_SETTING:
 		/* 1. Write Recommend settings */
 		/* 2. Write change settings */
-		if (ov5645_af_check_sensor_id(s_ctrl->sensor_i2c_client, OV5645_SENSOR_ID, true)) {
-			ov5645_af_init(s_ctrl->sensor_i2c_client, true);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			if (ov5645_af_check_sensor_id(s_ctrl->sensor_i2c_client, OV5645_SENSOR_ID, true)) {
+				ov5645_af_init(s_ctrl->sensor_i2c_client, true);
+			}
+			else {
+				s_ctrl->sensordata->slave_info->sensor_ctrl_mask &= ~0x0001;
+			}
 		}
 		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
 			i2c_write_conf_tbl(
@@ -1010,7 +1027,9 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 			s_ctrl->sensor_i2c_client, ov5645_start_settings,
 			ARRAY_SIZE(ov5645_start_settings),
 			MSM_CAMERA_I2C_BYTE_DATA);
-		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		}
 		break;
 	case CFG_GET_SENSOR_INIT_PARAMS:
 		cdata->cfg.sensor_init_params.modes_supported =
@@ -1110,12 +1129,16 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_AUTOFOCUS:
 		/* TO-DO: set the Auto Focus */
 		pr_debug("%s: Setting Auto Focus", __func__);
-		ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			ov5645_af_constant_focus(s_ctrl->sensor_i2c_client);
+		}
 		break;
 	case CFG_CANCEL_AUTOFOCUS:
 		/* TO-DO: Cancel the Auto Focus */
 		pr_debug("%s: Cancelling Auto Focus", __func__);
-		ov5645_af_cancel_focus(s_ctrl->sensor_i2c_client);
+		if ((s_ctrl->sensordata->slave_info->sensor_ctrl_mask & 0x001)) {
+			ov5645_af_cancel_focus(s_ctrl->sensor_i2c_client);
+		}
 		break;
 	case CFG_SET_ISO:
 		break;

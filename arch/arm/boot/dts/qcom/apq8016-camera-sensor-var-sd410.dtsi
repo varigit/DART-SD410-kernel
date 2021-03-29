@@ -19,7 +19,7 @@
 		compatible = "ovti,ov56450";
 		reg = <0x74 0x0>;
 		qcom,slave-id = <0x74 0x300a 0x5645>;
-		qcom,slave-id-ex = <0x78 0x3100>;
+		qcom,slave-id-ex = <0x78 0x3100 0x0001>;
 		qcom,csiphy-sd-index = <0>;
 		qcom,csid-sd-index = <0>;
 		qcom,mount-angle = <90>;
@@ -62,7 +62,7 @@
 		compatible = "ovti,ov5645";
 		reg = <0x76 0x0>;
 		qcom,slave-id = <0x76 0x300a 0x5645>;
-		qcom,slave-id-ex = <0x78 0x3100>;
+		qcom,slave-id-ex = <0x78 0x3100 0x0000>;
 		qcom,csiphy-sd-index = <1>;
 		qcom,csid-sd-index = <1>;
 		qcom,mount-angle = <90>;
