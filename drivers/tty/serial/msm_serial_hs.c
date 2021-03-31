@@ -72,7 +72,7 @@
 
 static void *ipc_msm_hs_log_ctxt;
 #define IPC_MSM_HS_LOG_PAGES 5
-#define UART_DMA_DESC_NR 8
+#define UART_DMA_DESC_NR 4
 
 /* If the debug_mask gets set to FATAL_LEV,
  * a fatal error has happened and further IPC logging
@@ -260,7 +260,8 @@ static struct of_device_id msm_hs_match_table[] = {
 
 #define MSM_UARTDM_BURST_SIZE 16   /* DM burst size (in bytes) */
 #define UARTDM_TX_BUF_SIZE UART_XMIT_SIZE
-#define UARTDM_RX_BUF_SIZE 512
+#define UARTDM_RX_BUF_SHIFT 15
+#define UARTDM_RX_BUF_SIZE (1 << UARTDM_RX_BUF_SHIFT)
 #define RETRY_TIMEOUT 5
 #define UARTDM_NR 256
 #define BAM_PIPE_MIN 0
@@ -1876,7 +1877,7 @@ msm_hs_mark_proc_rx_desc(struct msm_hs_port *msm_uport,
 {
 	struct msm_hs_rx *rx = &msm_uport->rx;
 	/* divide by UARTDM_RX_BUF_SIZE */
-	int inx = (notify->data.transfer.iovec.addr - rx->rbuffer) >> 9;
+	int inx = (notify->data.transfer.iovec.addr - rx->rbuffer) >> UARTDM_RX_BUF_SHIFT;
 
 	set_bit(inx, &rx->pending_flag);
 	clear_bit(inx, &rx->queued_flag);
@@ -1904,7 +1905,7 @@ static void msm_hs_sps_rx_callback(struct sps_event_notify *notify)
 	unsigned long flags;
 	struct msm_hs_rx *rx = &msm_uport->rx;
 	/* divide by UARTDM_RX_BUF_SIZE */
-	int inx = (notify->data.transfer.iovec.addr - rx->rbuffer) >> 9;
+	int inx = (notify->data.transfer.iovec.addr - rx->rbuffer) >> UARTDM_RX_BUF_SHIFT;
 
 	uport = &(msm_uport->uport);
 	msm_uport->notify = *notify;
