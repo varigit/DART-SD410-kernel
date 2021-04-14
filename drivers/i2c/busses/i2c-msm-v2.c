@@ -41,7 +41,7 @@
 #ifdef DEBUG
 static const enum msm_i2_debug_level DEFAULT_DBG_LVL = MSM_DBG;
 #else
-static const enum msm_i2_debug_level DEFAULT_DBG_LVL = MSM_ERR;
+static const enum msm_i2_debug_level DEFAULT_DBG_LVL = MSM_ERR; //Use MSM_WARN to enable I2C error logging
 #endif
 
 /* Forward declarations */
@@ -51,7 +51,6 @@ static int i2c_msm_xfer_wait_for_completion(struct i2c_msm_ctrl *ctrl,
 static int  i2c_msm_pm_resume(struct device *dev);
 static void i2c_msm_pm_suspend(struct device *dev);
 static void i2c_msm_clk_path_init(struct i2c_msm_ctrl *ctrl);
-
 /* string table for enum i2c_msm_xfer_mode_id */
 const char * const i2c_msm_mode_str_tbl[] = {
 	"FIFO", "BLOCK", "DMA", "None",
@@ -77,11 +76,15 @@ const char *i2c_msm_err_str_table[] = {
 };
 
 static void i2c_msm_dbg_dump_diag(struct i2c_msm_ctrl *ctrl,
+				enum msm_i2_debug_level dbg_level,
 				bool use_param_vals, u32 status, u32 qup_op)
 {
 	struct i2c_msm_xfer *xfer = &ctrl->xfer;
 	const char *str = i2c_msm_err_str_table[xfer->err];
 	char buf[I2C_MSM_REG_2_STR_BUF_SZ];
+
+	if (ctrl->dbgfs.dbg_lvl < dbg_level)
+		return;
 
 	if (!use_param_vals) {
 		void __iomem        *base = ctrl->rsrcs.base;
@@ -107,7 +110,7 @@ static void i2c_msm_dbg_dump_diag(struct i2c_msm_ctrl *ctrl,
 	}
 
 	/* dump xfer details */
-	dev_err(ctrl->dev,
+	dev_warn(ctrl->dev,
 		"%s: msgs(n:%d cur:%d %s) bc(rx:%zu tx:%zu) mode:%s slv_addr:0x%0x MSTR_STS:0x%08x OPER:0x%08x\n",
 		str, xfer->msg_cnt, xfer->cur_buf.msg_idx,
 		xfer->cur_buf.is_rx ? "rx" : "tx", xfer->rx_cnt, xfer->tx_cnt,
@@ -1854,9 +1857,9 @@ static irqreturn_t i2c_msm_qup_isr(int irq, void *devid)
 
 isr_end:
 	if (ctrl->xfer.err && (ctrl->dbgfs.dbg_lvl >= MSM_DBG))
-		i2c_msm_dbg_dump_diag(ctrl, true, i2c_status, qup_op);
+		i2c_msm_dbg_dump_diag(ctrl, MSM_DBG, true, i2c_status, qup_op);
 
-	if (log_event || (ctrl->dbgfs.dbg_lvl >= MSM_DBG))
+	if (log_event && (ctrl->dbgfs.dbg_lvl >= MSM_PROF))
 		i2c_msm_prof_evnt_add(ctrl, MSM_PROF,
 					I2C_MSM_IRQ_END,
 					i2c_status, qup_op, err_flags);
@@ -1983,6 +1986,9 @@ static int i2c_msm_qup_post_xfer(struct i2c_msm_ctrl *ctrl, int err)
 		}
 	}
 
+	if (ctrl->xfer.err && (ctrl->dbgfs.dbg_lvl < MSM_DBG))
+		i2c_msm_dbg_dump_diag(ctrl, MSM_WARN, false, 0, 0);
+
 	/*
 	 * Disable the IRQ before change to reset state to avoid
 	 * spurious interrupts.
@@ -2060,7 +2066,7 @@ static int i2c_msm_xfer_wait_for_completion(struct i2c_msm_ctrl *ctrl,
 	time_left = wait_for_completion_timeout(complete, xfer->timeout);
 	if (!time_left) {
 		xfer->err = I2C_MSM_ERR_TIMEOUT;
-		i2c_msm_dbg_dump_diag(ctrl, false, 0, 0);
+		i2c_msm_dbg_dump_diag(ctrl, MSM_WARN, false, 0, 0);
 		ret = -EIO;
 		i2c_msm_prof_evnt_add(ctrl, MSM_ERR, I2C_MSM_COMPLT_FL,
 						xfer->timeout, time_left, 0);

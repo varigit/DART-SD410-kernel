@@ -22,6 +22,7 @@
 
 enum msm_i2_debug_level {
 	MSM_ERR,	/* Error messages only. Always on */
+	MSM_WARN,	/* Error & Warning messages only. Use for diagnostics.*/
 	MSM_PROF,	/* High level events. Use for profiling */
 	MSM_DBG,	/* Low level details. Use for debugging */
 };
