@@ -141,17 +141,9 @@ static int ltc294x_read_regs(struct i2c_client *client,
 
 	ret = i2c_transfer(client->adapter, &msgs[0], 2);
 	if (ret < 0) {
-		dev_err(&client->dev, "ltc2941 read_reg failed!\n");
+		dev_warn(&client->dev, "ltc2941 read_reg failed!\n");
 		return ret;
 	}
-
-	//dev_err(&client->dev, "---%s (%#x, 1/%d) -> %#x\n",
-	//	__func__, reg, num_regs, *buf);
-//
-//	if (num_regs > 1) {
-//		dev_err(&client->dev, "---%s (%#x, 2/%d) -> %#x\n",
-//			__func__, reg, num_regs, buf[1]);
-//	}
 
 	return 0;
 }
@@ -164,7 +156,7 @@ static int ltc294x_write_regs(struct i2c_client *client,
 
 	ret = i2c_smbus_write_i2c_block_data(client, reg_start, num_regs, buf);
 	if (ret < 0) {
-		dev_err(&client->dev, "ltc2941 write_reg failed!\n");
+		dev_warn(&client->dev, "ltc2941 write_reg failed!\n");
 		return ret;
 	}
 
@@ -183,13 +175,13 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
 	/* Read status and control registers */
 	//ret = ltc294x_read_regs(info->client, LTC294X_REG_STATUS, &value, 1);
 	//if (ret < 0) {
-	//	dev_err(&info->client->dev,
+	//	dev_warn(&info->client->dev,
 	//		"Could not read registers from device\n");
 	//	goto error_exit;
 	//}
 	ret = ltc294x_read_regs(info->client, LTC294X_REG_CONTROL, &value, 1);
 	if (ret < 0) {
-		dev_err(&info->client->dev,
+		dev_warn(&info->client->dev,
 			"Could not read registers from device\n");
 		goto error_exit;
 	}
@@ -204,7 +196,7 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
 		ret = ltc294x_write_regs(info->client,
 			LTC294X_REG_CONTROL, &control, 1);
 		if (ret < 0) {
-			dev_err(&info->client->dev,
+			dev_warn(&info->client->dev,
 				"Could not write register\n");
 			goto error_exit;
 		}
@@ -216,7 +208,7 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
 								LTC294X_REG_ACC_CHARGE_MSB, value, 2);
 
 			if (ret < 0) {
-				dev_err(&info->client->dev,
+				dev_warn(&info->client->dev,
 							"ltc294x_reset: Could not write to register LTC294X_REG_ACC_CHARGE_MSB\n");
 			}
 			else {
@@ -232,7 +224,7 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
 
 		int ret = ltc294x_read_regs(info->client, LTC294X_REG_THRESH_HIGH_MSB, &datar[0], 2);
 		if (ret < 0) {
-			dev_err(&info->client->dev,
+			dev_warn(&info->client->dev,
 						"ltc294x_work: Could not read register LTC294X_REG_THRESH_HIGH_MSB\n");
 		}
 		else {
@@ -241,7 +233,7 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
 				ret = ltc294x_write_regs(info->client, LTC294X_REG_THRESH_HIGH_MSB, &dataw[0], 2);
 
 				if (ret < 0) {
-					dev_err(&info->client->dev,
+					dev_warn(&info->client->dev,
 							"ltc294x_work: Could not write to register LTC294X_REG_THRESH_HIGH_MSB\n");
 				}
 				else {
@@ -715,7 +707,7 @@ static void ltc294x_update(struct ltc294x_info *info, bool update_it)
 								LTC294X_REG_ACC_CHARGE_MSB, value, 2);
 
 			if (ret < 0) {
-				dev_err(&info->client->dev,
+				dev_warn(&info->client->dev,
 							"ltc294x_work: Could not write to register LTC294X_REG_ACC_CHARGE_MSB\n");
 			}
 			else {
@@ -735,7 +727,7 @@ static void ltc294x_update(struct ltc294x_info *info, bool update_it)
 							LTC294X_REG_ACC_CHARGE_MSB, value, 2);
 
 		if (ret < 0) {
-			dev_err(&info->client->dev,
+			dev_warn(&info->client->dev,
 						"ltc294x_work: Could not write to register LTC294X_REG_ACC_CHARGE_MSB\n");
 		}
 		else {

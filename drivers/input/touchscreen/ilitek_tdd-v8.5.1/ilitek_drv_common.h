@@ -763,7 +763,7 @@ extern struct ctp_config_info config_info;
  * If the debug log level is set as 0, the function for output log will be disabled.
  * By default, the debug log level is set as 1.
  */
-#define CONFIG_TOUCH_DRIVER_DEBUG_LOG_LEVEL (1)   // 1 : Default, 0 : No log. The bigger value, the more detailed log is output.
+#define CONFIG_TOUCH_DRIVER_DEBUG_LOG_LEVEL (0)   // 1 : Default, 0 : No log. The bigger value, the more detailed log is output.
 
 /*=============================================================*/
 // EXTERN VARIABLE DECLARATION

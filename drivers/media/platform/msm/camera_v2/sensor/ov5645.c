@@ -556,17 +556,17 @@ static struct platform_driver ov5645_platform_driver = {
 static int __init ov5645_init_module(void)
 {
 	int32_t rc;
-	pr_err("%s:%d\n", __func__, __LINE__);
+	pr_info("%s:%d\n", __func__, __LINE__);
 	rc = platform_driver_register(&ov5645_platform_driver);
 	if (!rc)
 		return rc;
-	pr_err("%s:%d rc %d\n", __func__, __LINE__, rc);
+	pr_info("%s:%d rc %d\n", __func__, __LINE__, rc);
 	return i2c_add_driver(&ov5645_i2c_driver);
 }
 
 static void __exit ov5645_exit_module(void)
 {
-	pr_err("%s:%d\n", __func__, __LINE__);
+	pr_info("%s:%d\n", __func__, __LINE__);
 	if (ov5645_s_ctrl.pdev) {
 		msm_sensor_free_sensor_data(&ov5645_s_ctrl);
 		platform_driver_unregister(&ov5645_platform_driver);
@@ -631,12 +631,12 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 		enum msm_sensor_resolution_t res = MSM_SENSOR_INVALID_RES;
 		if (copy_from_user(&res, (void *)cdata->cfg.setting,
 			sizeof(enum msm_sensor_resolution_t))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_info("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
 
-		pr_err("%s:%d  res =%d\n", __func__, __LINE__, res);
+		pr_info("%s:%d  res =%d\n", __func__, __LINE__, res);
 
 		if (res == MSM_SENSOR_RES_FULL) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -644,7 +644,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 				s_ctrl->sensor_i2c_client, ov5645_full_settings,
 				ARRAY_SIZE(ov5645_full_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-				pr_err("%s:%d res =%d ov5645_full_settings\n",
+				pr_info("%s:%d res =%d ov5645_full_settings\n",
 				__func__, __LINE__, res);
 		} else if (res == MSM_SENSOR_RES_QTR) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -652,7 +652,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 				s_ctrl->sensor_i2c_client, ov5645_sxga_settings,
 				ARRAY_SIZE(ov5645_sxga_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-			pr_err("%s:%d res =%d ov5645_sxga_settings\n",
+			pr_info("%s:%d res =%d ov5645_sxga_settings\n",
 				 __func__, __LINE__, res);
 		} else if (res == MSM_SENSOR_RES_2) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -661,10 +661,10 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 				ov5645_1080P_settings,
 				ARRAY_SIZE(ov5645_1080P_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-			pr_err("%s:%d res =%d ov5645_1080P_settings\n",
+			pr_info("%s:%d res =%d ov5645_1080P_settings\n",
 				 __func__, __LINE__, res);
 		} else {
-			pr_err("%s:%d failed resoultion set\n", __func__,
+			pr_warn("%s:%d failed resoultion set\n", __func__,
 				__LINE__);
 			rc = -EFAULT;
 		}
@@ -694,7 +694,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 				MSM_CAMERA_I2C_BYTE_DATA);
 		}
 		if (rc) {
-			pr_err("%s:%d failed rc = %ld\n", __func__, __LINE__,
+			pr_warn("%s:%d failed rc = %ld\n", __func__, __LINE__,
 				rc);
 			rc = -EFAULT;
 			break;
@@ -727,7 +727,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 		if (copy_from_user(&conf_array,
 			(void *)cdata->cfg.setting,
 			sizeof(struct msm_camera_i2c_reg_setting))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -735,7 +735,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 		if (!conf_array.size ||
 			conf_array.size > I2C_REG_DATA_MAX) {
 
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -743,14 +743,14 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 		reg_setting = kzalloc(conf_array.size *
 			(sizeof(struct msm_camera_i2c_reg_array)), GFP_KERNEL);
 		if (!reg_setting) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -ENOMEM;
 			break;
 		}
 		if (copy_from_user(reg_setting, (void *)conf_array.reg_setting,
 			conf_array.size *
 			sizeof(struct msm_camera_i2c_reg_array))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			kfree(reg_setting);
 			rc = -EFAULT;
 			break;
@@ -782,7 +782,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 		struct msm_camera_i2c_reg_array *reg_setting = NULL;
 		if (copy_from_user(stop_setting, (void *)cdata->cfg.setting,
 		    sizeof(struct msm_camera_i2c_reg_setting))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -791,14 +791,14 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 		stop_setting->reg_setting = kzalloc(stop_setting->size *
 			(sizeof(struct msm_camera_i2c_reg_array)), GFP_KERNEL);
 		if (!stop_setting->reg_setting) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -ENOMEM;
 			break;
 		}
 		if (copy_from_user(stop_setting->reg_setting,
 		    (void *)reg_setting, stop_setting->size *
 		    sizeof(struct msm_camera_i2c_reg_array))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			kfree(stop_setting->reg_setting);
 			stop_setting->reg_setting = NULL;
 			stop_setting->size = 0;
@@ -812,7 +812,7 @@ int32_t ov5645_sensor_config(struct msm_sensor_ctrl_t *s_ctrl,
 					MSM_CAMERA_STREAM_INVALID;
 		if (copy_from_user(&stream_type, (void *)cdata->cfg.setting,
 			sizeof(enum msm_camera_stream_type_t))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -919,12 +919,12 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 		if (copy_from_user(&res,
 			(void *)compat_ptr(cdata->cfg.setting),
 			sizeof(enum msm_sensor_resolution_t))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
 
-		pr_err("%s:%d  res =%d\n", __func__, __LINE__, res);
+		pr_info("%s:%d  res =%d\n", __func__, __LINE__, res);
 
 		if (res == MSM_SENSOR_RES_FULL) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -932,7 +932,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 				s_ctrl->sensor_i2c_client, ov5645_full_settings,
 				ARRAY_SIZE(ov5645_full_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-				pr_err("%s:%d res =%d ov5645_full_settings\n",
+				pr_info("%s:%d res =%d ov5645_full_settings\n",
 				__func__, __LINE__, res);
 		} else if (res == MSM_SENSOR_RES_QTR) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -940,7 +940,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 				s_ctrl->sensor_i2c_client, ov5645_sxga_settings,
 				ARRAY_SIZE(ov5645_sxga_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-			pr_err("%s:%d res =%d ov5645_sxga_settings\n",
+			pr_info("%s:%d res =%d ov5645_sxga_settings\n",
 				 __func__, __LINE__, res);
 		} else if (res == MSM_SENSOR_RES_2) {
 			rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->
@@ -949,10 +949,10 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 				ov5645_1080P_settings,
 				ARRAY_SIZE(ov5645_1080P_settings),
 				MSM_CAMERA_I2C_BYTE_DATA);
-			pr_err("%s:%d res =%d ov5645_1080P_settings\n",
+			pr_info("%s:%d res =%d ov5645_1080P_settings\n",
 				 __func__, __LINE__, res);
 		} else {
-			pr_err("%s:%d failed resoultion set\n", __func__,
+			pr_warn("%s:%d failed resoultion set\n", __func__,
 				__LINE__);
 			rc = -EFAULT;
 		}
@@ -982,7 +982,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 				MSM_CAMERA_I2C_BYTE_DATA);
 		}
 		if (rc) {
-			pr_err("%s:%d failed rc = %ld\n", __func__, __LINE__,
+			pr_warn("%s:%d failed rc = %ld\n", __func__, __LINE__,
 				rc);
 			rc = -EFAULT;
 			break;
@@ -1015,7 +1015,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 		if (copy_from_user(&conf_array32,
 			(void *)compat_ptr(cdata->cfg.setting),
 			sizeof(struct msm_camera_i2c_reg_setting32))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -1030,7 +1030,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 		if (!conf_array.size ||
 			conf_array.size > I2C_REG_DATA_MAX) {
 
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -1038,14 +1038,14 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 		reg_setting = kzalloc(conf_array.size *
 			(sizeof(struct msm_camera_i2c_reg_array)), GFP_KERNEL);
 		if (!reg_setting) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -ENOMEM;
 			break;
 		}
 		if (copy_from_user(reg_setting, (void *)conf_array.reg_setting,
 			conf_array.size *
 			sizeof(struct msm_camera_i2c_reg_array))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			kfree(reg_setting);
 			rc = -EFAULT;
 			break;
@@ -1076,7 +1076,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 		if (copy_from_user(&stream_type,
 			(void *)compat_ptr(cdata->cfg.setting),
 			sizeof(enum msm_camera_stream_type_t))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_warn("%s:%d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -1112,7 +1112,7 @@ int32_t ov5645_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 	case CFG_SET_WHITE_BALANCE:
 		break;
 	default:
-		pr_err("Invalid cfgtype func %s line %d cfgtype = %d\n",
+		pr_warn("Invalid cfgtype func %s line %d cfgtype = %d\n",
 			__func__, __LINE__, (int32_t)cdata->cfgtype);
 		rc = -EFAULT;
 		break;
