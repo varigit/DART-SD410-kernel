@@ -22,7 +22,7 @@ static int write_cmos_sensor(struct msm_camera_i2c_client *sensor_i2c_client, ui
 		reg_data = value;
 		rc = sensor_i2c_client->i2c_func_tbl->i2c_write(sensor_i2c_client, address, reg_data, MSM_CAMERA_I2C_BYTE_DATA);
 		if (rc < 0) {
-			pr_err("%s: write i2c address failed on i2c_write!\n", __func__);
+			pr_warn("%s: write i2c address failed on i2c_write!\n", __func__);
 		}
 	}
 
@@ -37,7 +37,7 @@ static int read_cmos_sensor(struct msm_camera_i2c_client *sensor_i2c_client, uin
 	if (sensor_i2c_client && value) {
 		rc = sensor_i2c_client->i2c_func_tbl->i2c_read(sensor_i2c_client, address, &reg_data, MSM_CAMERA_I2C_BYTE_DATA);
 		if (rc < 0) {
-			pr_err("%s: read i2c address failed on i2c_read!\n", __func__);
+			pr_warn("%s: read i2c address failed on i2c_read!\n", __func__);
 		}
 		else {
 			*value = (uint8_t)reg_data;
@@ -161,7 +161,7 @@ int ov5645_af_init(struct msm_camera_i2c_client *sensor_i2c_client, bool verify)
 		//CDBG("----> state=0x%x\n", state);
 		mdelay(5);
         if (iteration-- == 0) {
-			pr_err("%s: af init failed\n", __func__);
+			pr_warn("%s: af init failed\n", __func__);
 			rv = -1;
 			break;
         }
@@ -225,7 +225,7 @@ bool ov5645_af_check_sensor_id(struct msm_camera_i2c_client *sensor_i2c_client, 
 			rv = true;
             break; 
 		}
-        pr_err("%s: wrong sensor ID = 0x%04x read; expected sensor ID = 0x%04x\n", __func__, sensor_id_read, sensor_id); 
+        pr_warn("%s: wrong sensor ID = 0x%04x read; expected sensor ID = 0x%04x\n", __func__, sensor_id_read, sensor_id); 
         retry--; 
     } 
 	while (retry > 0);
