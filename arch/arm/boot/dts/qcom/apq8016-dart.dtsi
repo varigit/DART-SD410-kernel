@@ -127,6 +127,7 @@
 
 	qcom,wcnss-wlan@0a000000 {
 		qcom,wlan-indication-enabled;
+		status = "disabled";
 	};
 };
 

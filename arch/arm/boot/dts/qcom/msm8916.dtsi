@@ -831,6 +831,7 @@
 			qcom,smd-irq-bitmask = <0x20000>;
 			interrupts = <0 142 1>;
 			label = "wcnss";
+			status = "disabled";
 		};
 
 		qcom,smsm-wcnss {
@@ -839,6 +840,7 @@
 			qcom,smsm-irq-offset = <0x0>;
 			qcom,smsm-irq-bitmask = <0x80000>;
 			interrupts = <0 144 1>;
+			status = "disabled";
 		};
 
 		qcom,smd-rpm {
@@ -1112,16 +1114,19 @@
 		smdtty_apps_fm: qcom,smdtty-apps-fm {
 			qcom,smdtty-remote = "wcnss";
 			qcom,smdtty-port-name = "APPS_FM";
+			status = "disabled";
 		};
 
 		smdtty_apps_riva_bt_acl: smdtty-apps-riva-bt-acl {
 			qcom,smdtty-remote = "wcnss";
 			qcom,smdtty-port-name = "APPS_RIVA_BT_ACL";
+			status = "disabled";
 		};
 
 		smdtty_apps_riva_bt_cmd: qcom,smdtty-apps-riva-bt-cmd {
 			qcom,smdtty-remote = "wcnss";
 			qcom,smdtty-port-name = "APPS_RIVA_BT_CMD";
+			status = "disabled";
 		};
 
 		smdtty_mbalbridge: qcom,smdtty-mbalbridge {
@@ -1132,11 +1137,13 @@
 		smdtty_apps_riva_ant_cmd: smdtty-apps-riva-ant-cmd {
 			qcom,smdtty-remote = "wcnss";
 			qcom,smdtty-port-name = "APPS_RIVA_ANT_CMD";
+			status = "disabled";
 		};
 
 		smdtty_apps_riva_ant_data: smdtty-apps-riva-ant-data {
 			qcom,smdtty-remote = "wcnss";
 			qcom,smdtty-port-name = "APPS_RIVA_ANT_DATA";
+			status = "disabled";
 		};
 
 		smdtty_data1: qcom,smdtty-data1 {
@@ -1374,6 +1381,7 @@
 		qcom,is-pronto-vt;
 		qcom,has-pronto-hw;
 		qcom,wcnss-adc_tm = <&pm8916_adc_tm>;
+		status = "disabled";
 	};
 
 	spi_0: spi@78b7000 { /* BLSP1 QUP3 */
@@ -1847,6 +1855,7 @@
 		/* GPIO output to wcnss */
 		qcom,gpio-force-stop = <&smp2pgpio_ssr_smp2p_4_out 0 0>;
 		linux,contiguous-region = <&peripheral_mem>;
+		status = "disabled";
 	};
 
 	cpu-pmu {
